@@ -27,6 +27,7 @@ model Startup {
   name        String
   description String
   fundingGoal Float
+  websiteLink String
   createdAt   DateTime @default(now())
   ownerId     Int
   owner       User     @relation("StartupOwner", fields: [ownerId], references: [id])
