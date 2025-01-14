@@ -12,3 +12,27 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
+  password  String
+  role      Role?
+  createdAt DateTime  @default(now())
+  startups  Startup[] @relation("StartupOwner") // Relation to startups for startup owners
+}
+
+model Startup {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String
+  fundingGoal Float
+  createdAt   DateTime @default(now())
+  ownerId     Int
+  owner       User     @relation("StartupOwner", fields: [ownerId], references: [id])
+}
+
+enum Role {
+  INVESTOR
+  STARTUP_OWNER
+}
