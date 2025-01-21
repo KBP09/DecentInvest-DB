@@ -5,16 +5,17 @@ import * as jwt from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
 
 dotenv.config();
-export const authenticatToken = (req: Request, res: Response, next: NextFunction) => {
+export const authenticateToken = (req: Request, res: Response, next: NextFunction): void => {
     const token = req.headers.authorization?.split(' ')[1];
 
     if (!token) {
-        return res.status(401).json({ error: 'Access denied. No token provided.' });
+        res.status(401).json({ error: 'Access denied. No token provided.' });
+        return;
     }
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET as string);
-        (req as any).user = decoded; 
+        (req as any).user = decoded;
         next();
     } catch (err) {
         res.status(403).json({ error: 'Invalid or expired token.' });
@@ -62,6 +63,19 @@ export const setRole = async (req: Request, res: Response): Promise<any> => {
             data: { role },
         });
 
+        if (role === "STARTUP_OWNER") {
+            await prisma.cEOProfile.create({
+                data: {
+                    userId
+                },
+            });
+        } else if (role === "INVESTOR") {
+            await prisma.investorProfile.create({
+                data:{
+                    userId
+                },
+            })
+        }
         return res.status(200).json({ message: `Role set to ${role}` });
     }
     catch (error) {
