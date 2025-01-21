@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -14,23 +8,52 @@ datasource db {
 }
 
 model User {
-  id        Int       @id @default(autoincrement())
-  email     String    @unique
-  password  String
-  role      Role?
-  createdAt DateTime  @default(now())
-  startups  Startup[] @relation("StartupOwner") // Relation to startups for startup owners
+  id              String           @id @default(uuid()) @db.Uuid
+  email           String           @unique
+  password        String
+  role            Role?
+  createdAt       DateTime         @default(now())
+  startups        Startup[]        @relation("StartupOwner") // Relation to startups for startup owners
+  ceoProfile      CEOProfile? // Relation to CEO profile
+  investorProfile InvestorProfile? // Relation to Investor profile
 }
 
 model Startup {
-  id          Int      @id @default(autoincrement())
+  id          String       @id @default(uuid()) @db.Uuid
   name        String
+  ceoName     String
   description String
   fundingGoal Float
   websiteLink String
-  createdAt   DateTime @default(now())
-  ownerId     Int
-  owner       User     @relation("StartupOwner", fields: [ownerId], references: [id])
+  createdAt   DateTime     @default(now())
+  ownerId     String       @db.Uuid
+  owner       User         @relation("StartupOwner", fields: [ownerId], references: [id])
+  investments Investment[] // Relation to investments
+}
+
+model CEOProfile {
+  id               String @id @default(uuid()) @db.Uuid
+  totalInvestments Float  @default(0) // Total investments received
+  startupsCreated  Int    @default(0) // Total startups created
+  userId           String @unique @db.Uuid
+  user             User   @relation(fields: [userId], references: [id])
+}
+
+model InvestorProfile {
+  id                  String       @id @default(uuid()) @db.Uuid
+  totalAmountInvested Float        @default(0) // Total amount invested by the user
+  startupsInvestedIn  Investment[] // Relation to investments
+  userId              String       @unique @db.Uuid
+  user                User         @relation(fields: [userId], references: [id])
+}
+
+model Investment {
+  id         String          @id @default(uuid()) @db.Uuid
+  amount     Float
+  startupId  String          @db.Uuid
+  investorId String          @db.Uuid
+  startup    Startup         @relation(fields: [startupId], references: [id])
+  investor   InvestorProfile @relation(fields: [investorId], references: [id])
 }
 
 enum Role {
