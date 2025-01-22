@@ -119,3 +119,33 @@ export const login = async (req: Request, res: Response): Promise<any> => {
         res.status(500).json({ error: "Error during login " });
     }
 }
+
+export const verifyOtp = async (req: Request,res:Response): Promise<any> => {
+    const {email,password,otp} = req.body;
+    try{
+
+        const user = await prisma.user.findUnique({
+            where: {
+                email: email
+            }
+        })
+
+        if(!user){
+            return res.status(404).json({error:"user not found"});
+        }
+
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+
+        if(!isPasswordValid){
+            return res.status(401).json({error:"password is incorrect"});
+        }
+
+        if(user.otp===otp){
+            return res.status(200).json({message:"otp verification successfull"});
+        }
+        return res.status(400).json({error:"Invalid otp"});
+    }
+    catch(error){
+        return res.status(500).json({error:"Something went wrong"});
+    }
+}

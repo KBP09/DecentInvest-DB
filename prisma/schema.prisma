@@ -16,6 +16,7 @@ model User {
   startups        Startup[]        @relation("StartupOwner") // Relation to startups for startup owners
   ceoProfile      CEOProfile? // Relation to CEO profile
   investorProfile InvestorProfile? // Relation to Investor profile
+  otp             Int              @default(0)
 }
 
 model Startup {
