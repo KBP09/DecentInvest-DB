@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt';
 import dotenv from 'dotenv'
 import * as jwt from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
+import { sendOtpEmail } from "./emailVerification";
 
 dotenv.config();
 export const authenticateToken = (req: Request, res: Response, next: NextFunction): void => {
@@ -44,7 +45,15 @@ export const signup = async (req: Request, res: Response): Promise<any> => {
                 role: null
             }
         })
-        res.json({ message: 'Signup successful, select your role.', userId: user.id });
+        const otp = await sendOtpEmail(email);
+        const newUser = await prisma.user.update({
+            where: {
+                email: email
+            }, data: {
+                otp:otp
+            }
+        })
+        res.json({ message: 'Signup successful, Please verify your otp'});
     }
     catch (error) {
         res.status(500).json({ error: "Error during signup" });
@@ -71,7 +80,7 @@ export const setRole = async (req: Request, res: Response): Promise<any> => {
             });
         } else if (role === "INVESTOR") {
             await prisma.investorProfile.create({
-                data:{
+                data: {
                     userId
                 },
             })
@@ -120,9 +129,9 @@ export const login = async (req: Request, res: Response): Promise<any> => {
     }
 }
 
-export const verifyOtp = async (req: Request,res:Response): Promise<any> => {
-    const {email,password,otp} = req.body;
-    try{
+export const verifyOtp = async (req: Request, res: Response): Promise<any> => {
+    const { email, password, otp } = req.body;
+    try {
 
         const user = await prisma.user.findUnique({
             where: {
@@ -130,22 +139,22 @@ export const verifyOtp = async (req: Request,res:Response): Promise<any> => {
             }
         })
 
-        if(!user){
-            return res.status(404).json({error:"user not found"});
+        if (!user) {
+            return res.status(404).json({ error: "user not found" });
         }
 
         const isPasswordValid = await bcrypt.compare(password, user.password);
 
-        if(!isPasswordValid){
-            return res.status(401).json({error:"password is incorrect"});
+        if (!isPasswordValid) {
+            return res.status(401).json({ error: "password is incorrect" });
         }
 
-        if(user.otp===otp){
-            return res.status(200).json({message:"otp verification successfull"});
+        if (user.otp === otp) {
+            return res.status(200).json({ message: "otp verification successfull" });
         }
-        return res.status(400).json({error:"Invalid otp"});
+        return res.status(400).json({ error: "Invalid otp" });
     }
-    catch(error){
-        return res.status(500).json({error:"Something went wrong"});
+    catch (error) {
+        return res.status(500).json({ error: "Something went wrong" });
     }
 }
