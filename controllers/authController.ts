@@ -149,8 +149,22 @@ export const verifyOtp = async (req: Request, res: Response): Promise<any> => {
             return res.status(401).json({ error: "password is incorrect" });
         }
 
+        const accessToken = jwt.sign(
+            { id: user.id, email: user.email, role: user.role },
+            process.env.JWT_SECRET as string,
+            { expiresIn: process.env.JWT_EXPIRES_IN }
+        );
+
         if (user.otp === otp) {
-            return res.status(200).json({ message: "otp verification successfull" });
+            return res.status(200).json({ 
+                message: "Verification Successful",
+                accessToken,
+                user: {
+                    id: user.id,
+                    email: user.email,
+                    role: user.role
+                }, 
+            });
         }
         return res.status(400).json({ error: "Invalid otp" });
     }
