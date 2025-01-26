@@ -17,6 +17,7 @@ model User {
   ceoProfile      CEOProfile? // Relation to CEO profile
   investorProfile InvestorProfile? // Relation to Investor profile
   otp             Int              @default(0)
+  isFirstLogin    Boolean          @default(true)
 }
 
 model Startup {
@@ -29,7 +30,7 @@ model Startup {
   createdAt   DateTime     @default(now())
   ownerId     String       @db.Uuid
   owner       User         @relation("StartupOwner", fields: [ownerId], references: [id])
-  investments Investment[] // Relation to investments
+  investments Investment[]
 }
 
 model CEOProfile {

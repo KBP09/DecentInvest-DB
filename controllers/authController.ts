@@ -50,10 +50,10 @@ export const signup = async (req: Request, res: Response): Promise<any> => {
             where: {
                 email: email
             }, data: {
-                otp:otp
+                otp: otp
             }
         })
-        res.json({ message: 'Signup successful, Please verify your otp'});
+        res.json({ message: 'Signup successful, Please verify your otp' });
     }
     catch (error) {
         res.status(500).json({ error: "Error during signup" });
@@ -69,7 +69,7 @@ export const setRole = async (req: Request, res: Response): Promise<any> => {
     try {
         await prisma.user.update({
             where: { id: userId },
-            data: { role },
+            data: { role: role, isFirstLogin: false },
         });
 
         if (role === "STARTUP_OWNER") {
@@ -156,14 +156,14 @@ export const verifyOtp = async (req: Request, res: Response): Promise<any> => {
         );
 
         if (user.otp === otp) {
-            return res.status(200).json({ 
+            return res.status(200).json({
                 message: "Verification Successful",
                 accessToken,
                 user: {
                     id: user.id,
                     email: user.email,
                     role: user.role
-                }, 
+                },
             });
         }
         return res.status(400).json({ error: "Invalid otp" });
