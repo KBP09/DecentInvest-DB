@@ -67,6 +67,18 @@ export const setRole = async (req: Request, res: Response): Promise<any> => {
         return res.status(400).json({ error: "Invalid role!" });
     }
     try {
+
+        const user = await prisma.user.findUnique({
+            where: { id: userId },
+            select: {
+                role: true,
+            }
+        })
+
+        if (user?.role === "INVESTOR" || user?.role === "STARTUP_OWNER") {
+            return res.status(409).json({ error: 'Role is already set' })
+        } 
+
         await prisma.user.update({
             where: { id: userId },
             data: { role: role, isFirstLogin: false },
@@ -114,6 +126,8 @@ export const login = async (req: Request, res: Response): Promise<any> => {
             { expiresIn: process.env.JWT_EXPIRES_IN }
         );
 
+        const isFirstLogin = user.isFirstLogin;
+
         res.status(200).json({
             message: "Login Successful",
             accessToken,
@@ -122,6 +136,7 @@ export const login = async (req: Request, res: Response): Promise<any> => {
                 email: user.email,
                 role: user.role
             },
+            isFirstLogin: isFirstLogin
         });
     }
     catch (error) {
@@ -149,6 +164,8 @@ export const verifyOtp = async (req: Request, res: Response): Promise<any> => {
             return res.status(401).json({ error: "password is incorrect" });
         }
 
+        const isFirstLogin = user.isFirstLogin;
+
         const accessToken = jwt.sign(
             { id: user.id, email: user.email, role: user.role },
             process.env.JWT_SECRET as string,
@@ -164,6 +181,7 @@ export const verifyOtp = async (req: Request, res: Response): Promise<any> => {
                     email: user.email,
                     role: user.role
                 },
+                isFirstLogin: isFirstLogin
             });
         }
         return res.status(400).json({ error: "Invalid otp" });
