@@ -62,3 +62,23 @@ enum Role {
   INVESTOR
   STARTUP_OWNER
 }
+
+model Wallet {
+  id           String    @id @default(uuid()) @db.Uuid
+  email        String    @unique
+  hashMnemonic String    @unique
+  password     String
+  account      Account[]
+  createdAt    DateTime  @default(now())
+}
+
+model Account {
+  id         String   @id @default(uuid()) @db.Uuid
+  walletId   String   @db.Uuid
+  address    String   @unique
+  privateKey String
+  balance    Float    @default(0)
+  Wallet     Wallet   @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  currency   String
+  createdAt  DateTime @default(now())
+}
