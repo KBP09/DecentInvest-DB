@@ -4,6 +4,7 @@ import dotenv from 'dotenv'
 import * as jwt from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
 import { sendOtpEmail } from "./emailVerification";
+import { createWallet } from "./walletService";
 
 dotenv.config();
 export const authenticateToken = (req: Request, res: Response, next: NextFunction): void => {
@@ -173,6 +174,7 @@ export const verifyOtp = async (req: Request, res: Response): Promise<any> => {
         );
 
         if (user.otp === otp) {
+            const resp = await createWallet(email,password);
             return res.status(200).json({
                 message: "Verification Successful",
                 accessToken,
@@ -181,7 +183,8 @@ export const verifyOtp = async (req: Request, res: Response): Promise<any> => {
                     email: user.email,
                     role: user.role
                 },
-                isFirstLogin: isFirstLogin
+                isFirstLogin: isFirstLogin,
+                wallet:resp
             });
         }
         return res.status(400).json({ error: "Invalid otp" });
