@@ -14,8 +14,7 @@ interface CreateWalletResponse {
     walletId: string;
     address: string;
     privateKey: string;
-    seedPhrase: string;
-    usdcBalances: { chainId: string; balance: number }[];
+    accounts: { chainId: string; balance: number; currency: string }[];
 }
 
 export const createWallet = async (email: string, password: string): Promise<CreateWalletResponse> => {
@@ -47,7 +46,7 @@ export const createWallet = async (email: string, password: string): Promise<Cre
                 },
             },
             include: {
-                account: true, 
+                account: true,
             },
         });
 
@@ -67,13 +66,26 @@ export const createWallet = async (email: string, password: string): Promise<Cre
         });
 
         await Promise.all(addressPromises);
+        const accountsWithAddresses = await prisma.account.findMany({
+            where: { walletId: newWallet.id },
+            include: {
+                addresses: {
+                    select: {
+                        chainId: true,
+                        balance: true,
+                        currency: true,
+                    },
+                },
+            },
+        });
+
+        const accounts = accountsWithAddresses.flatMap(account => account.addresses);
 
         return {
             walletId: newWallet.id,
             address: wallet.address,
             privateKey: wallet.privateKey,
-            seedPhrase: walletMnemonic,
-            usdcBalances,
+            accounts: accounts,
         };
     } else {
         throw new Error("Failed to generate wallet mnemonic.");
@@ -88,7 +100,7 @@ const getBalance = async (walletAddress: string) => {
     const balances = await Promise.all(
         usdcDetails.map(async (details) => {
             try {
-                const RPC_URL = process.env.RPC_URL;
+                const RPC_URL = details.rpc_url;
                 const provider = new ethers.JsonRpcProvider(RPC_URL);
                 const contract = new ethers.Contract(
                     details.tokenAddress,
