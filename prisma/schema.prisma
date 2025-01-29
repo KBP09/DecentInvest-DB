@@ -13,9 +13,9 @@ model User {
   password        String
   role            Role?
   createdAt       DateTime         @default(now())
-  startups        Startup[]        @relation("StartupOwner") // Relation to startups for startup owners
-  ceoProfile      CEOProfile? // Relation to CEO profile
-  investorProfile InvestorProfile? // Relation to Investor profile
+  startups        Startup[]        @relation("StartupOwner")
+  ceoProfile      CEOProfile?
+  investorProfile InvestorProfile?
   otp             Int              @default(0)
   isFirstLogin    Boolean          @default(true)
 }
@@ -35,16 +35,16 @@ model Startup {
 
 model CEOProfile {
   id               String @id @default(uuid()) @db.Uuid
-  totalInvestments Float  @default(0) // Total investments received
-  startupsCreated  Int    @default(0) // Total startups created
+  totalInvestments Float  @default(0)
+  startupsCreated  Int    @default(0)
   userId           String @unique @db.Uuid
   user             User   @relation(fields: [userId], references: [id])
 }
 
 model InvestorProfile {
   id                  String       @id @default(uuid()) @db.Uuid
-  totalAmountInvested Float        @default(0) // Total amount invested by the user
-  startupsInvestedIn  Investment[] // Relation to investments
+  totalAmountInvested Float        @default(0)
+  startupsInvestedIn  Investment[]
   userId              String       @unique @db.Uuid
   user                User         @relation(fields: [userId], references: [id])
 }
@@ -73,12 +73,36 @@ model Wallet {
 }
 
 model Account {
-  id         String   @id @default(uuid()) @db.Uuid
-  walletId   String   @db.Uuid
-  address    String   @unique
+  id         String    @id @default(uuid()) @db.Uuid
+  walletId   String    @db.Uuid
+  address    String
   privateKey String
-  balance    Float    @default(0)
-  Wallet     Wallet   @relation(fields: [walletId], references: [id], onDelete: Cascade)
-  currency   String
-  createdAt  DateTime @default(now())
+  Wallet     Wallet    @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  createdAt  DateTime  @default(now())
+  addresses  Address[]
+}
+
+model Address {
+  id        String   @id @default(uuid()) @db.Uuid
+  walletId  String   @db.Uuid
+  address   String
+  chainId   String
+  currency  Currency @default(USDC)
+  balance   Float    @default(0)
+  createdAt DateTime @default(now())
+  accountId String   @db.Uuid
+  Account   Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+}
+
+enum Currency {
+  USDC
+}
+
+model TokenDetails {
+  id           String @id @default(uuid()) @db.Uuid
+  name         String
+  symbol       String
+  chainId      String @unique
+  tokenAddress String
+  decimals     Int    @default(6)
 }
