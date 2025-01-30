@@ -53,16 +53,20 @@ export const createWallet = async (email: string, password: string): Promise<Cre
         const accountId = newWallet.account[0].id;
 
         const addressPromises = usdcBalances.map(async (data) => {
-            return await prisma.address.create({
-                data: {
-                    walletId: newWallet.id,
-                    accountId: accountId,
-                    chainId: data.chainId,
-                    address: wallet.address,
-                    currency: "USDC",
-                    balance: data.balance,
-                },
-            });
+            if (data.chainId && data.balance && data.tokenAddress) {
+                return await prisma.address.create({
+                    data: {
+                        walletId: newWallet.id,
+                        accountId: accountId,
+                        chainId: data.chainId,
+                        address: wallet.address,
+                        tokenAddress: data.tokenAddress,
+                        currency: "USDC",
+                        balance: data.balance,
+                    },
+                });
+            }
+            throw new Error("Missing required fields in data object");
         });
 
         await Promise.all(addressPromises);
@@ -73,6 +77,7 @@ export const createWallet = async (email: string, password: string): Promise<Cre
                     select: {
                         chainId: true,
                         balance: true,
+                        tokenAddress:true,
                         currency: true,
                     },
                 },
@@ -113,6 +118,7 @@ const getBalance = async (walletAddress: string) => {
                 const formattedBalance = Number(ethers.formatUnits(balance, details.decimals));
                 return {
                     chainId: details.chainId,
+                    tokenAddress: details.tokenAddress,
                     balance: formattedBalance,
                 };
             } catch (error) {
