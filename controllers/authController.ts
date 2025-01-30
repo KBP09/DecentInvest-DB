@@ -78,7 +78,7 @@ export const setRole = async (req: Request, res: Response): Promise<any> => {
 
         if (user?.role === "INVESTOR" || user?.role === "STARTUP_OWNER") {
             return res.status(409).json({ error: 'Role is already set' })
-        } 
+        }
 
         await prisma.user.update({
             where: { id: userId },
@@ -127,15 +127,23 @@ export const login = async (req: Request, res: Response): Promise<any> => {
             { expiresIn: process.env.JWT_EXPIRES_IN }
         );
 
+        const wallet = await prisma.wallet.findUnique({
+            where: {
+                email: email
+            },
+            include: {
+                account: true
+            }
+        })
         const isFirstLogin = user.isFirstLogin;
 
         res.status(200).json({
-            message: "Login Successful",
-            accessToken,
             user: {
-                id: user.id,
+                userId: user.id,
                 email: user.email,
-                role: user.role
+                accessToken: accessToken,
+                role: user.role,
+                account: wallet?.account
             },
             isFirstLogin: isFirstLogin
         });
@@ -174,22 +182,22 @@ export const verifyOtp = async (req: Request, res: Response): Promise<any> => {
         );
 
         if (user.otp === otp) {
-            const resp = await createWallet(email,password);
+            const resp = await createWallet(email, password);
             return res.status(200).json({
-                message: "Verification Successful",
-                accessToken,
                 user: {
-                    id: user.id,
+                    userId: user.id,
                     email: user.email,
-                    role: user.role
+                    accessToken: accessToken,
+                    role: user.role,
+                    account: resp
                 },
                 isFirstLogin: isFirstLogin,
-                wallet:resp
             });
         }
         return res.status(400).json({ error: "Invalid otp" });
     }
-    catch (error) {
-        return res.status(500).json({ error: "Something went wrong" });
+    catch (error: any) {
+        console.error("Error during OTP verification:", error);
+        return res.status(500).json({ error: error.message || "Internal server error" });
     }
 }

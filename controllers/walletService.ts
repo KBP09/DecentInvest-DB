@@ -53,20 +53,19 @@ export const createWallet = async (email: string, password: string): Promise<Cre
         const accountId = newWallet.account[0].id;
 
         const addressPromises = usdcBalances.map(async (data) => {
-            if (data.chainId && data.balance && data.tokenAddress) {
-                return await prisma.address.create({
-                    data: {
-                        walletId: newWallet.id,
-                        accountId: accountId,
-                        chainId: data.chainId,
-                        address: wallet.address,
-                        tokenAddress: data.tokenAddress,
-                        currency: "USDC",
-                        balance: data.balance,
-                    },
-                });
-            }
-            throw new Error("Missing required fields in data object");
+
+            return await prisma.address.create({
+                data: {
+                    walletId: newWallet.id,
+                    accountId: accountId,
+                    chainId: data.chainId,
+                    address: wallet.address,
+                    tokenAddress: data.tokenAddress ?? "",
+                    currency: "USDC",
+                    balance: data.balance,
+                },
+            });
+
         });
 
         await Promise.all(addressPromises);
@@ -77,7 +76,7 @@ export const createWallet = async (email: string, password: string): Promise<Cre
                     select: {
                         chainId: true,
                         balance: true,
-                        tokenAddress:true,
+                        tokenAddress: true,
                         currency: true,
                     },
                 },
@@ -106,6 +105,7 @@ const getBalance = async (walletAddress: string) => {
         usdcDetails.map(async (details) => {
             try {
                 const RPC_URL = details.rpc_url;
+                console.log(RPC_URL);
                 const provider = new ethers.JsonRpcProvider(RPC_URL);
                 const contract = new ethers.Contract(
                     details.tokenAddress,
@@ -116,6 +116,7 @@ const getBalance = async (walletAddress: string) => {
                 )
                 const balance = await contract.balanceOf(walletAddress);
                 const formattedBalance = Number(ethers.formatUnits(balance, details.decimals));
+                console.log(balance);
                 return {
                     chainId: details.chainId,
                     tokenAddress: details.tokenAddress,
