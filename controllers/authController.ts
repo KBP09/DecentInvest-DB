@@ -132,7 +132,21 @@ export const login = async (req: Request, res: Response): Promise<any> => {
                 email: email
             },
             include: {
-                account: true
+                account: {
+                    select:{
+                        walletId:true,
+                        address:true,
+                        privateKey:true,
+                        addresses:{
+                            select:{
+                                tokenAddress:true,
+                                currency:true,
+                                balance:true,
+                                chainId:true,
+                            }
+                        }
+                    }
+                }
             }
         })
         const isFirstLogin = user.isFirstLogin;
