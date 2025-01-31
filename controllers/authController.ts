@@ -85,19 +85,6 @@ export const setRole = async (req: Request, res: Response): Promise<any> => {
             data: { role: role, isFirstLogin: false },
         });
 
-        if (role === "STARTUP_OWNER") {
-            await prisma.cEOProfile.create({
-                data: {
-                    userId
-                },
-            });
-        } else if (role === "INVESTOR") {
-            await prisma.investorProfile.create({
-                data: {
-                    userId
-                },
-            })
-        }
         return res.status(200).json({ message: `Role set to ${role}` });
     }
     catch (error) {

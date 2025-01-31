@@ -8,16 +8,17 @@ datasource db {
 }
 
 model User {
-  id              String           @id @default(uuid()) @db.Uuid
-  email           String           @unique
-  password        String
-  role            Role?
-  createdAt       DateTime         @default(now())
-  startups        Startup[]        @relation("StartupOwner")
-  ceoProfile      CEOProfile?
-  investorProfile InvestorProfile?
-  otp             Int              @default(0)
-  isFirstLogin    Boolean          @default(true)
+  id                String           @id @default(uuid()) @db.Uuid
+  email             String           @unique
+  password          String
+  role              Role?
+  createdAt         DateTime         @default(now())
+  startups          Startup[]        @relation("StartupOwner")
+  ceoProfile        CEOProfile?
+  investorProfile   InvestorProfile?
+  otp               Int              @default(0)
+  isFirstLogin      Boolean          @default(true)
+  isProfileComplete Boolean          @default(false)
 }
 
 model Startup {
@@ -34,15 +35,21 @@ model Startup {
 }
 
 model CEOProfile {
-  id               String @id @default(uuid()) @db.Uuid
-  totalInvestments Float  @default(0)
-  startupsCreated  Int    @default(0)
-  userId           String @unique @db.Uuid
-  user             User   @relation(fields: [userId], references: [id])
+  id               String   @id @default(uuid()) @db.Uuid
+  ceoName          String
+  about            String
+  birthday         DateTime
+  totalInvestments Float    @default(0)
+  startupsCreated  Int      @default(0)
+  userId           String   @unique @db.Uuid
+  user             User     @relation(fields: [userId], references: [id])
 }
 
 model InvestorProfile {
   id                  String       @id @default(uuid()) @db.Uuid
+  investorName        String
+  about               String
+  birthday            DateTime
   totalAmountInvested Float        @default(0)
   startupsInvestedIn  Investment[]
   userId              String       @unique @db.Uuid

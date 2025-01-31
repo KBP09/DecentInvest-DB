@@ -36,7 +36,7 @@ export const getProfile = async (req: Request, res: Response): Promise<any> => {
             return res.status(404).json({ error: "Profile not found" });
         }
 
-        return res.status(200).json({ profile,startupDetails });
+        return res.status(200).json({ profile, startupDetails });
 
     } catch (error) {
         res.status(500).json({ error: "Error fetching profile" });
@@ -80,5 +80,20 @@ export const createStartup = async (req: Request, res: Response): Promise<any> =
     } catch (error) {
         console.error(error);
         return res.status(500).json({ error: 'Error creating startup' });
+    }
+}
+
+export const setProfile = async (req: Request, res: Response): Promise<any> => {
+    const { email, name, about, birthday } = req.body;
+    try {
+        const user = await prisma.user.findUnique({
+            where: {
+                email: email
+            }
+        })
+
+    } catch (error) {
+
+
     }
 }
