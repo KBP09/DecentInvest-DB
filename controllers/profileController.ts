@@ -94,33 +94,68 @@ export const setProfile = async (req: Request, res: Response): Promise<any> => {
             }
         });
 
-        if (user?.isProfileComplete) {
-            if(user.role === 'STARTUP_OWNER'){
+        if (user?.isProfileComplete===false) {
+            if (user.role === 'STARTUP_OWNER') {
                 const ceoProfile = await prisma.cEOProfile.create({
-                    data:{
-                        user:userId,
+                    data: {
+                        user: {
+                            connect:{id:userId},
+                        },
                         ceoName: name,
                         about: about,
-                        birthday:birthday,
+                        birthday: new Date(birthday),
+                    }
+                });
+                const update = await prisma.user.update({
+                    where: {
+                        id: userId,
+                    },
+                    data: {
+                        isProfileComplete: true
                     }
                 });
                 return res.status(200).json({ ceoProfile });
-            }else if(user.role === 'INVESTOR'){
+            } else if (user.role === 'INVESTOR') {
                 const investorProfile = await prisma.investorProfile.create({
-                    data:{
-                        user:userId,
-                        investorName:name,
-                        about:about,
-                        birthday:birthday,
+                    data: {
+                        user: {
+                            connect:{id:userId},
+                        },
+                        investorName: name,
+                        about: about,
+                        birthday: new Date(birthday),
+                    }
+                });
+                const update = await prisma.user.update({
+                    where: {
+                        id: userId,
+                    },
+                    data: {
+                        isProfileComplete: true
                     }
                 });
                 return res.status(200).json({ investorProfile });
             }
 
-            return res.status(400).json({message: "something went wrong"});
+            return res.status(400).json({ message: "something went wrong" });
         }
     } catch (error) {
         console.error(error);
         return res.status(500).json({ error: 'Error creating profile' });
+    }
+}
+
+export const profileCheck = async (req: Request, res: Response): Promise<any> => {
+    const {userId} = req.body;
+
+    try{
+        const user = await prisma.user.findUnique({
+            where:{
+                id:userId
+            }
+        })
+        return res.status(200).json(user?.isProfileComplete);
+    }catch(error){
+        return res.status(500).json({error:"something went wrong"});
     }
 }
