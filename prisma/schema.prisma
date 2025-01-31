@@ -36,6 +36,7 @@ model Startup {
 
 model CEOProfile {
   id               String   @id @default(uuid()) @db.Uuid
+  profilePicture   String?
   ceoName          String
   about            String
   birthday         DateTime
@@ -47,6 +48,7 @@ model CEOProfile {
 
 model InvestorProfile {
   id                  String       @id @default(uuid()) @db.Uuid
+  profilePicture      String?
   investorName        String
   about               String
   birthday            DateTime

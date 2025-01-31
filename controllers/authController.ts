@@ -94,6 +94,7 @@ export const setRole = async (req: Request, res: Response): Promise<any> => {
 
 export const login = async (req: Request, res: Response): Promise<any> => {
     const { email, password } = req.body;
+
     try {
         const user = await prisma.user.findUnique({
             where: { email: email },
@@ -156,6 +157,7 @@ export const login = async (req: Request, res: Response): Promise<any> => {
 
 export const verifyOtp = async (req: Request, res: Response): Promise<any> => {
     const { email, password, otp } = req.body;
+    
     try {
 
         const user = await prisma.user.findUnique({

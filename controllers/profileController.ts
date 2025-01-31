@@ -6,6 +6,7 @@ import { Request, Response } from 'express';
 
 export const getProfile = async (req: Request, res: Response): Promise<any> => {
     const { userId } = req.body;
+
     try {
         const user = await prisma.user.findUnique({
             where: {
@@ -45,6 +46,7 @@ export const getProfile = async (req: Request, res: Response): Promise<any> => {
 
 export const createStartup = async (req: Request, res: Response): Promise<any> => {
     const { userId, ceoName, name, description, fundingGoal, websiteLink } = req.body;
+
     try {
         const user = await prisma.user.findUnique({
             where: {
@@ -66,15 +68,14 @@ export const createStartup = async (req: Request, res: Response): Promise<any> =
                 ceoName: ceoName,
                 ownerId: userId
             }
-        })
+        });
 
         await prisma.cEOProfile.update({
             where: { userId: userId },
             data: {
                 startupsCreated: { increment: 1 },
             },
-        })
-
+        });
         return res.status(201).json({ message: 'Startup created successfully', newStartup });
 
     } catch (error) {
@@ -84,16 +85,42 @@ export const createStartup = async (req: Request, res: Response): Promise<any> =
 }
 
 export const setProfile = async (req: Request, res: Response): Promise<any> => {
-    const { email, name, about, birthday } = req.body;
+    const { userId, name, about, birthday } = req.body;
+
     try {
         const user = await prisma.user.findUnique({
             where: {
-                email: email
+                id: userId,
             }
-        })
+        });
 
+        if (user?.isProfileComplete) {
+            if(user.role === 'STARTUP_OWNER'){
+                const ceoProfile = await prisma.cEOProfile.create({
+                    data:{
+                        user:userId,
+                        ceoName: name,
+                        about: about,
+                        birthday:birthday,
+                    }
+                });
+                return res.status(200).json({ ceoProfile });
+            }else if(user.role === 'INVESTOR'){
+                const investorProfile = await prisma.investorProfile.create({
+                    data:{
+                        user:userId,
+                        investorName:name,
+                        about:about,
+                        birthday:birthday,
+                    }
+                });
+                return res.status(200).json({ investorProfile });
+            }
+
+            return res.status(400).json({message: "something went wrong"});
+        }
     } catch (error) {
-
-
+        console.error(error);
+        return res.status(500).json({ error: 'Error creating profile' });
     }
 }

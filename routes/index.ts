@@ -1,6 +1,6 @@
 import express from 'express'
 import authRoute from './authRoute'
-import { getProfile, createStartup } from '../controllers/profileController';
+import { getProfile, createStartup, setProfile } from '../controllers/profileController';
 import { authenticateToken } from '../controllers/authController';
 import cors from 'cors';
 
@@ -16,6 +16,7 @@ app.use(
 app.use(express.json());
 
 app.use("/auth", authRoute);
+app.use("/setProfile", setProfile);
 app.use("/getProfile", authenticateToken, getProfile);
 app.use("/create-startup", authenticateToken, createStartup);
 
