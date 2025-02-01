@@ -192,7 +192,7 @@ export const verifyOtp = async (req: Request, res: Response): Promise<any> => {
                     email: user.email,
                     accessToken: accessToken,
                     role: user.role,
-                    account: resp
+                    account: [resp]
                 },
                 isFirstLogin: isFirstLogin,
             });

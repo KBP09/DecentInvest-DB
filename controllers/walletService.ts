@@ -14,7 +14,7 @@ interface CreateWalletResponse {
     walletId: string;
     address: string;
     privateKey: string;
-    accounts: { chainId: string; balance: number; currency: string }[];
+    addresses: { chainId: string; balance: number; currency: string }[];
 }
 
 export const createWallet = async (email: string, password: string): Promise<CreateWalletResponse> => {
@@ -89,7 +89,7 @@ export const createWallet = async (email: string, password: string): Promise<Cre
             walletId: newWallet.id,
             address: wallet.address,
             privateKey: wallet.privateKey,
-            accounts: accounts,
+            addresses: accounts,
         };
     } else {
         throw new Error("Failed to generate wallet mnemonic.");
