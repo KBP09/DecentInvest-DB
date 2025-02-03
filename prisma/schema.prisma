@@ -117,3 +117,17 @@ model TokenDetails {
   decimals     Int    @default(6)
   rpc_url      String @default("")
 }
+
+model Transaction {
+  id              Int      @id @default(autoincrement())
+  transactionHash String?  @unique
+  fromAddress     String
+  toAddress       String
+  amount          Float    @default(0)
+  currency        String
+  totalTxnCost    Float    @default(0)
+  chainId         String
+  timeStamp       DateTime @default(now())
+  confirmed       Boolean
+  nonce           Int      @default(0)
+}
