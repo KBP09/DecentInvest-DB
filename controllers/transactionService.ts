@@ -5,118 +5,119 @@ import { USDC_ABI } from "../abis/usdcABI";
 import Web3 from "web3";
 dotenv.config();
 
-const chainConfigs: { [key: number]: { url: string; usdcAddress: string } } = {
-    80001: {
-        url: 'https://api-amoy.polygonscan.com/api?module=account&action=tokentx&contractaddress=0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582&address=0x91BE83EaF25263cCcEC016BD084492905EBE51f7&page=1&offset=2&sort=asc&apikey=USUA42E1EDV6WR2NJUR4IFBWRHBRX6RG1B',
-        usdcAddress: '0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582'
-    },
-    8453: {
-        url: 'https://base.org/rpc',
-        usdcAddress: '0xA0b86991c6218b36c1d19D4a2e9Eb0Ce3606eB48'
-    },
-    42161: {
-        url: 'https://arbitrum-mainnet.infura.io/v3/YOUR_INFURA_PROJECT_ID',
-        usdcAddress: '0xB97EF9Af5eY9A9449Aa84174'
-    }
-};
+const polApiKey = process.env.POLPOSAMOY_API;
 
+const testNetChains = [80001];
 
-
-export const transaction = async (req: Request, res: Response): Promise<any> => {
-    const { amount, fromAddress, toAddress, currency, chainId, privateKey, contractAddress } = req.body;
-
-    try {
-        const chainConfig = chainConfigs[chainId];
-
-        if (!chainConfig) {
-            throw new Error(`Unsupported chain ID: ${chainId}`);
-        }
-
-        const { url, usdcAddress } = chainConfig;
-
-        const web3 = new Web3(url);
-        const fromWallet = await prisma.address.findFirst({
-            where: {
-                address: fromAddress,
-                chainId: chainId,
-                currency: currency
-            }
-        });
-
-        if (!fromWallet) {
-            return res.status(404).json({
-                error: "Wallet not found"
-            });
-        }
-
-        const transactionCost = await getTransactionCost(url, fromAddress, toAddress, amount, contractAddress);
-
-
-        if ((fromWallet.balance - amount <= 0) && (fromWallet.balance - transactionCost) <= 0) {
-            return res.status(400).json({
-                error: "Insufficient Balance"
-            });
-        }
-
-        const amountInWei = web3.utils.toWei(amount.toString(), 'mwei');
-
-        const tx = {
-            nonce: await web3.eth.getTransactionCount(fromAddress, 'latest'),
-            gasPrice: await web3.eth.getGasPrice(),
-            to: contractAddress || usdcAddress,
-            data: web3.eth.abi.encodeFunctionCall(
-                {
-                    name: 'transfer',
-                    type: 'function',
-                    inputs: [
-                        { name: '_to', type: 'address' },
-                        { name: '_value', type: 'uint256' }
-                    ]
-                },
-                [toAddress, amountInWei]
-            ),
-            gas: 100000,
-            chainId: chainId
-        };
-
-        const signedTx = await web3.eth.accounts.signTransaction(tx, privateKey) as unknown as {
-            rawTransaction: string;
-            transactionHash: string;
-        };
-
-        if (!signedTx.rawTransaction) {
-            return res.status(400).json({ error: 'Signing transaction failed' });
-        }
-
-        const receipt = await web3.eth.sendSignedTransaction(signedTx.rawTransaction);
-
-        await prisma.address.update({
-            where: { id: fromWallet.id },
-            data: { balance: fromWallet.balance - amount - transactionCost }
-        });
-
-        const transaction = await prisma.transaction.create({
-            data: {
-                fromAddress: fromAddress,
-                toAddress: toAddress,
-                amount: amount,
-                currency: 'USDC',
-                transactionHash: receipt.transactionHash.toString(),
-                confirmed: false,
-                chainId: chainId
-            }
-        });
-
-        return res.status(200).json({
-            message: "Transaction successful",
-            transactionHash: receipt.transactionHash,
-            transaction
-        });
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ error: "An error occurred during the transaction" });
-    }
+interface ChainConfig {
+    url: string;
+    usdcAddress: string;
 }
+
+const getChainConfig = (address: string): Record<number, ChainConfig> => ({
+    80001: {
+        url: `https://api-amoy.polygonscan.com/api?module=account&action=tokentx&contractaddress=0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582&address=${address}&page=1&offset=2&sort=asc&apikey=${polApiKey}`,
+        usdcAddress: '0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582',
+    }
+});
+
+
+
+// export const transaction = async (req: Request, res: Response): Promise<any> => {
+//     const { amount, fromAddress, toAddress, currency, chainId, privateKey, contractAddress } = req.body;
+
+//     try {
+//         const chainConfig = chainConfigs[chainId];
+
+//         if (!chainConfig) {
+//             throw new Error(`Unsupported chain ID: ${chainId}`);
+//         }
+
+//         const { url, usdcAddress } = chainConfig;
+
+//         const web3 = new Web3(url);
+//         const fromWallet = await prisma.address.findFirst({
+//             where: {
+//                 address: fromAddress,
+//                 chainId: chainId,
+//                 currency: currency
+//             }
+//         });
+
+//         if (!fromWallet) {
+//             return res.status(404).json({
+//                 error: "Wallet not found"
+//             });
+//         }
+
+//         const transactionCost = await getTransactionCost(url, fromAddress, toAddress, amount, contractAddress);
+
+
+//         if ((fromWallet.balance - amount <= 0) && (fromWallet.balance - transactionCost) <= 0) {
+//             return res.status(400).json({
+//                 error: "Insufficient Balance"
+//             });
+//         }
+
+//         const amountInWei = web3.utils.toWei(amount.toString(), 'mwei');
+
+//         const tx = {
+//             nonce: await web3.eth.getTransactionCount(fromAddress, 'latest'),
+//             gasPrice: await web3.eth.getGasPrice(),
+//             to: contractAddress || usdcAddress,
+//             data: web3.eth.abi.encodeFunctionCall(
+//                 {
+//                     name: 'transfer',
+//                     type: 'function',
+//                     inputs: [
+//                         { name: '_to', type: 'address' },
+//                         { name: '_value', type: 'uint256' }
+//                     ]
+//                 },
+//                 [toAddress, amountInWei]
+//             ),
+//             gas: 100000,
+//             chainId: chainId
+//         };
+
+//         const signedTx = await web3.eth.accounts.signTransaction(tx, privateKey) as unknown as {
+//             rawTransaction: string;
+//             transactionHash: string;
+//         };
+
+//         if (!signedTx.rawTransaction) {
+//             return res.status(400).json({ error: 'Signing transaction failed' });
+//         }
+
+//         const receipt = await web3.eth.sendSignedTransaction(signedTx.rawTransaction);
+
+//         await prisma.address.update({
+//             where: { id: fromWallet.id },
+//             data: { balance: fromWallet.balance - amount - transactionCost }
+//         });
+
+//         const transaction = await prisma.transaction.create({
+//             data: {
+//                 fromAddress: fromAddress,
+//                 toAddress: toAddress,
+//                 amount: amount,
+//                 currency: 'USDC',
+//                 transactionHash: receipt.transactionHash.toString(),
+//                 confirmed: false,
+//                 chainId: chainId
+//             }
+//         });
+
+//         return res.status(200).json({
+//             message: "Transaction successful",
+//             transactionHash: receipt.transactionHash,
+//             transaction
+//         });
+//     } catch (error) {
+//         console.error(error);
+//         return res.status(500).json({ error: "An error occurred during the transaction" });
+//     }
+// }
 
 export const getTransactionCost = async (rpcUrl: string, fromAddress: string, toAddress: string, amount: number, contractAddress: string): Promise<any> => {
 
@@ -142,6 +143,32 @@ export const getTransactionCost = async (rpcUrl: string, fromAddress: string, to
     }
 }
 
-export const updateTransaction = async(address:string): Promise<any> => {
+
+export const updateTransaction = async (address: string): Promise<any> => {
+    try {
+        for (let i = 0; i < testNetChains.length; i++) {
+            const chainId = testNetChains[i];
+            const chainConfigs = getChainConfig(address);
+            const config = chainConfigs[chainId];
+            if (!config) {
+                console.error(`No configuration found for chain ${chainId}`);
+                continue;
+            }
+
+            console.log(`Fetching transaction data from: ${config.url}`);
+
+            const response = await fetch(config.url);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch data for chain ${chainId}, status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log(`Transaction data for chain ${chainId}:`, data);
+
+
+        }
+    }catch(error){
+        console.log(error);
+    }
 
 }
