@@ -3,23 +3,24 @@ import dotenv from 'dotenv';
 import { Request, Response } from "express";
 import { USDC_ABI } from "../abis/usdcABI";
 import Web3 from "web3";
-import { error } from "console";
 dotenv.config();
 
-const chainConfigs: { [key: number]: { rpcUrl: string; usdcAddress: string } } = {
-    137: {
-        rpcUrl: 'https://polygon-rpc.com',
-        usdcAddress: '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174'
+const chainConfigs: { [key: number]: { url: string; usdcAddress: string } } = {
+    80001: {
+        url: 'https://api-amoy.polygonscan.com/api?module=account&action=tokentx&contractaddress=0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582&address=0x91BE83EaF25263cCcEC016BD084492905EBE51f7&page=1&offset=2&sort=asc&apikey=USUA42E1EDV6WR2NJUR4IFBWRHBRX6RG1B',
+        usdcAddress: '0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582'
     },
     8453: {
-        rpcUrl: 'https://base.org/rpc',
+        url: 'https://base.org/rpc',
         usdcAddress: '0xA0b86991c6218b36c1d19D4a2e9Eb0Ce3606eB48'
     },
     42161: {
-        rpcUrl: 'https://arbitrum-mainnet.infura.io/v3/YOUR_INFURA_PROJECT_ID',
+        url: 'https://arbitrum-mainnet.infura.io/v3/YOUR_INFURA_PROJECT_ID',
         usdcAddress: '0xB97EF9Af5eY9A9449Aa84174'
     }
 };
+
+
 
 export const transaction = async (req: Request, res: Response): Promise<any> => {
     const { amount, fromAddress, toAddress, currency, chainId, privateKey, contractAddress } = req.body;
@@ -31,9 +32,9 @@ export const transaction = async (req: Request, res: Response): Promise<any> => 
             throw new Error(`Unsupported chain ID: ${chainId}`);
         }
 
-        const { rpcUrl, usdcAddress } = chainConfig;
+        const { url, usdcAddress } = chainConfig;
 
-        const web3 = new Web3(rpcUrl);
+        const web3 = new Web3(url);
         const fromWallet = await prisma.address.findFirst({
             where: {
                 address: fromAddress,
@@ -48,7 +49,7 @@ export const transaction = async (req: Request, res: Response): Promise<any> => 
             });
         }
 
-        const transactionCost = await getTransactionCost(rpcUrl, fromAddress, toAddress, amount, contractAddress);
+        const transactionCost = await getTransactionCost(url, fromAddress, toAddress, amount, contractAddress);
 
 
         if ((fromWallet.balance - amount <= 0) && (fromWallet.balance - transactionCost) <= 0) {
@@ -139,4 +140,8 @@ export const getTransactionCost = async (rpcUrl: string, fromAddress: string, to
         console.error('Error estimating gas cost:', error);
         throw new Error('Failed to estimate gas cost');
     }
+}
+
+export const updateTransaction = async(address:string): Promise<any> => {
+
 }
