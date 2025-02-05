@@ -163,12 +163,45 @@ export const updateTransaction = async (address: string): Promise<any> => {
             }
 
             const data = await response.json();
+            console.log("--------------------------------------------")
             console.log(`Transaction data for chain ${chainId}:`, data);
+            console.log("--------------------------------------------")
 
+            if (!data?.result?.length) {
+                console.warn("No transaction data found.");
+                return;
+            }
+
+            const parsedTransactions = data.result.map((txn: any) => ({
+                transactionHash: txn.hash,
+                fromAddress: txn.from,
+                toAddress: txn.to,
+                amount: parseFloat(txn.value) / Math.pow(10, parseInt(txn.tokenDecimal)),
+                currency: txn.tokenName,
+                totalTxnCost:
+                    (parseFloat(txn.gasUsed) * parseFloat(txn.gasPrice)) /
+                    Math.pow(10, 18),
+                chainId: chainId,
+                timeStamp: new Date(parseInt(txn.timeStamp) * 1000),
+                confirmed: parseInt(txn.confirmations) > 0,
+                nonce: parseInt(txn.nonce),
+            }));
+
+            console.log('Parsed Transactions:', parsedTransactions);
+
+            for (const transaction of parsedTransactions) {
+                try {
+                    await prisma.transaction.create({
+                        data: transaction,
+                    });
+                    console.log(`Transaction ${transaction.transactionHash} saved successfully.`);
+                } catch (error) {
+                    console.error(`Error saving transaction ${transaction.transactionHash}:`, error);
+                }
+            }
 
         }
-    }catch(error){
+    } catch (error) {
         console.log(error);
     }
-
 }
