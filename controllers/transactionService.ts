@@ -191,10 +191,20 @@ export const updateTransaction = async (address: string): Promise<any> => {
 
             for (const transaction of parsedTransactions) {
                 try {
+                    const existingTransaction = await prisma.transaction.findUnique({
+                        where: { transactionHash: transaction.transactionHash },
+                    });
+
+                    if (existingTransaction) {
+                        console.log(`Transaction ${transaction.transactionHash} already exists.`);
+                        continue;
+                    }
                     await prisma.transaction.create({
                         data: transaction,
                     });
                     console.log(`Transaction ${transaction.transactionHash} saved successfully.`);
+                    
+                    await updateBalances(transaction);
                 } catch (error) {
                     console.error(`Error saving transaction ${transaction.transactionHash}:`, error);
                 }
@@ -203,5 +213,58 @@ export const updateTransaction = async (address: string): Promise<any> => {
         }
     } catch (error) {
         console.log(error);
+    }
+}
+
+const updateBalances = async (transaction: any) => {
+    const { fromAddress, toAddress, amount, chainId, currency } = transaction;
+
+    const fromAddressEntry = await prisma.address.findFirst({
+        where: {
+            address: fromAddress,
+            chainId: chainId,
+            currency: currency
+        }
+    });
+
+    const toAddressEntry = await prisma.address.findFirst({
+        where: {
+            address: toAddress,
+            chainId: chainId,
+            currency: currency
+        }
+    });
+
+    if (fromAddressEntry && toAddressEntry) {
+        console.log(`Both addresses are platform wallets. Handling internal transfer.`);
+
+        await prisma.address.update({
+            where: { id: fromAddressEntry.id },
+            data: { balance: { decrement: amount } },
+        });
+
+        await prisma.address.update({
+            where: { id: toAddressEntry.id },
+            data: { balance: { increment: amount } },
+        });
+
+        console.log(`Internal transfer processed between ${fromAddress} and ${toAddress}`);
+        return;
+    }
+
+    if (fromAddressEntry) {
+        await prisma.address.update({
+            where: { id: fromAddressEntry.id },
+            data: { balance: { decrement: amount } },
+        });
+        console.log(`Updated balance for sender address: ${fromAddress}`);
+    }
+
+    if (toAddressEntry) {
+        await prisma.address.update({
+            where: { id: toAddressEntry.id },
+            data: { balance: { increment: amount } },
+        });
+        console.log(`Updated balance for receiver address: ${toAddress}`);
     }
 }
