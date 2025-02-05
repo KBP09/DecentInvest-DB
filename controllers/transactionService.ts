@@ -144,8 +144,10 @@ export const getTransactionCost = async (rpcUrl: string, fromAddress: string, to
 }
 
 
-export const updateTransaction = async (address: string): Promise<any> => {
+export const updateTransaction = async (req: Request, res: Response): Promise<any> => {
+    const { address } = req.body
     try {
+
         for (let i = 0; i < testNetChains.length; i++) {
             const chainId = testNetChains[i];
             const chainConfigs = getChainConfig(address);
@@ -169,7 +171,7 @@ export const updateTransaction = async (address: string): Promise<any> => {
 
             if (!data?.result?.length) {
                 console.warn("No transaction data found.");
-                return;
+                return res.status(200).json({ message: "Transaction updated successfully" });
             }
 
             const parsedTransactions = data.result.map((txn: any) => ({
@@ -181,7 +183,7 @@ export const updateTransaction = async (address: string): Promise<any> => {
                 totalTxnCost:
                     (parseFloat(txn.gasUsed) * parseFloat(txn.gasPrice)) /
                     Math.pow(10, 18),
-                chainId: chainId,
+                chainId: chainId.toString(),
                 timeStamp: new Date(parseInt(txn.timeStamp) * 1000),
                 confirmed: parseInt(txn.confirmations) > 0,
                 nonce: parseInt(txn.nonce),
@@ -203,13 +205,14 @@ export const updateTransaction = async (address: string): Promise<any> => {
                         data: transaction,
                     });
                     console.log(`Transaction ${transaction.transactionHash} saved successfully.`);
-                    
+
                     await updateBalances(transaction);
                 } catch (error) {
                     console.error(`Error saving transaction ${transaction.transactionHash}:`, error);
                 }
             }
 
+            return res.status(200).json({ message: "Transaction updated successfully" });
         }
     } catch (error) {
         console.log(error);
@@ -218,22 +221,23 @@ export const updateTransaction = async (address: string): Promise<any> => {
 
 const updateBalances = async (transaction: any) => {
     const { fromAddress, toAddress, amount, chainId, currency } = transaction;
-
+    console.log(transaction);
     const fromAddressEntry = await prisma.address.findFirst({
         where: {
-            address: fromAddress,
+            address: { equals: fromAddress, mode: 'insensitive' },
             chainId: chainId,
             currency: currency
         }
     });
-
+    console.log(fromAddressEntry);
     const toAddressEntry = await prisma.address.findFirst({
         where: {
-            address: toAddress,
+            address: { equals: toAddress, mode: 'insensitive' },
             chainId: chainId,
             currency: currency
         }
     });
+    console.log(toAddressEntry);
 
     if (fromAddressEntry && toAddressEntry) {
         console.log(`Both addresses are platform wallets. Handling internal transfer.`);

@@ -1,6 +1,7 @@
 import express from 'express'
 import authRoute from './authRoute'
 import { getProfile, createStartup, setProfile, profileCheck } from '../controllers/profileController';
+import { updateTransaction } from '../controllers/transactionService';
 import { authenticateToken } from '../controllers/authController';
 import cors from 'cors';
 
@@ -20,5 +21,6 @@ app.use("/setProfile",authenticateToken, setProfile);
 app.use("/profileCheck",profileCheck);
 app.use("/getProfile", authenticateToken, getProfile);
 app.use("/create-startup", authenticateToken, createStartup);
+app.use("/updateTransaction",authenticateToken,updateTransaction);
 
 export default app;
