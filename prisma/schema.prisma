@@ -92,27 +92,29 @@ model Account {
 }
 
 model Address {
-  id           String   @id @default(uuid()) @db.Uuid
-  walletId     String   @db.Uuid
+  id           String       @id @default(uuid()) @db.Uuid
+  walletId     String       @db.Uuid
   address      String
   chainId      String
-  currency     Currency @default(USDC)
-  balance      Float    @default(0)
+  currency     String
+  currencyType CurrencyType
+  balance      Float        @default(0)
   tokenAddress String
-  createdAt    DateTime @default(now())
-  accountId    String   @db.Uuid
-  Account      Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  createdAt    DateTime     @default(now())
+  accountId    String       @db.Uuid
+  Account      Account      @relation(fields: [accountId], references: [id], onDelete: Cascade)
 }
 
-enum Currency {
-  USDC
+enum CurrencyType {
+  TOKEN
+  NATIVE
 }
 
 model TokenDetails {
   id           String @id @default(uuid()) @db.Uuid
   name         String
   symbol       String
-  chainId      String @unique
+  chainId      String 
   tokenAddress String
   decimals     Int    @default(6)
   rpc_url      String @default("")

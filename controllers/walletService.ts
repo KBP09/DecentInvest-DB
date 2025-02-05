@@ -4,6 +4,7 @@ import * as crypto from "crypto";
 import bcrypt from 'bcrypt';
 import dotenv from 'dotenv'
 import Web3 from "web3";
+import { CurrencyType } from "@prisma/client";
 
 dotenv.config();
 
@@ -29,11 +30,9 @@ export const createWallet = async (email: string, password: string): Promise<Cre
 
         const wallet = ethers.Wallet.fromPhrase(walletMnemonic);
 
-        const usdcDetails = await prisma.tokenDetails.findMany({
-            where: { symbol: "USDC" },
-        })
+        const tokenDetails = await prisma.tokenDetails.findMany({
+        });
 
-        const usdcBalances = await getBalance(wallet.address);
         const newWallet = await prisma.wallet.create({
             data: {
                 email: email,
@@ -50,26 +49,29 @@ export const createWallet = async (email: string, password: string): Promise<Cre
                 account: true,
             },
         });
-
+    
         const accountId = newWallet.account[0].id;
+        
 
-        const addressPromises = usdcBalances.map(async (data) => {
-
+        // Create addresses for all supported tokens with a default balance of 0
+        const addressPromises = tokenDetails.map(async (token) => {
+            const isNativeToken = token.tokenAddress==="0x0000000000000000000000000000000000000000";
             return await prisma.address.create({
                 data: {
                     walletId: newWallet.id,
                     accountId: accountId,
-                    chainId: data.chainId,
+                    chainId: token.chainId,
                     address: wallet.address,
-                    tokenAddress: data.tokenAddress ?? "",
-                    currency: "USDC",
-                    balance: data.balance,
+                    tokenAddress: token.tokenAddress,
+                    currency: token.symbol,
+                    currencyType: isNativeToken ? CurrencyType.NATIVE: CurrencyType.TOKEN,
+                    balance: 0, 
                 },
             });
-
         });
 
         await Promise.all(addressPromises);
+
         const accountsWithAddresses = await prisma.account.findMany({
             where: { walletId: newWallet.id },
             include: {
@@ -95,42 +97,4 @@ export const createWallet = async (email: string, password: string): Promise<Cre
     } else {
         throw new Error("Failed to generate wallet mnemonic.");
     }
-}
-
-const getBalance = async (walletAddress: string) => {
-    const usdcDetails = await prisma.tokenDetails.findMany({
-        where: { symbol: "USDC" },
-    });
-
-    const balances = await Promise.all(
-        usdcDetails.map(async (details) => {
-            try {
-                const RPC_URL = details.rpc_url;
-                console.log(RPC_URL);
-                const provider = new ethers.JsonRpcProvider(RPC_URL);
-                const contract = new ethers.Contract(
-                    details.tokenAddress,
-                    [
-                        "function balanceOf(address account) view returns (uint256)"
-                    ],
-                    provider
-                )
-                const balance = await contract.balanceOf(walletAddress);
-                const formattedBalance = Number(ethers.formatUnits(balance, details.decimals));
-                console.log(balance);
-                return {
-                    chainId: details.chainId,
-                    tokenAddress: details.tokenAddress,
-                    balance: formattedBalance,
-                };
-            } catch (error) {
-                console.error(`Error fetching balance for chain ${details.chainId}:`, error);
-                return {
-                    chainId: details.chainId,
-                    balance: 0,
-                };
-            }
-        })
-    )
-    return balances;
-}
+};

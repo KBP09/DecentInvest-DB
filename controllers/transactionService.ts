@@ -6,118 +6,142 @@ import Web3 from "web3";
 dotenv.config();
 
 const polApiKey = process.env.POLPOSAMOY_API;
-
-const testNetChains = [80001];
+const infuraApiKey = process.env.INFURA_KEY;
+const testNetChains = [80002];
 
 interface ChainConfig {
     url: string;
     usdcAddress: string;
 }
 
-const getChainConfig = (address: string): Record<number, ChainConfig> => ({
-    80001: {
-        url: `https://api-amoy.polygonscan.com/api?module=account&action=tokentx&contractaddress=0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582&address=${address}&page=1&offset=2&sort=asc&apikey=${polApiKey}`,
+const getChainConfig = (address: string, action: string): Record<number, ChainConfig> => ({
+    80002: {
+        url: `https://api-amoy.polygonscan.com/api?module=account&action=${action}&contractaddress=0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582&address=${address}&page=1&offset=2&sort=asc&apikey=${polApiKey}`,
         usdcAddress: '0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582',
     }
 });
 
+const providerListInfuria = {
+    "POL": "https://polygon-mainnet.infura.io/v3/",
+    "POL-AMOY": "https://polygon-amoy.infura.io/v3/",
+}
 
 
-// export const transaction = async (req: Request, res: Response): Promise<any> => {
-//     const { amount, fromAddress, toAddress, currency, chainId, privateKey, contractAddress } = req.body;
 
-//     try {
-//         const chainConfig = chainConfigs[chainId];
+export const transaction = async (req: Request, res: Response): Promise<any> => {
+    const { amount, fromAddress, toAddress, currency, chainId, privateKey, contractAddress } = req.body;
 
-//         if (!chainConfig) {
-//             throw new Error(`Unsupported chain ID: ${chainId}`);
-//         }
+    try {
+        const url = "https://polygon-amoy.infura.io/v3/a5d7e9b31d1247538827bbc14525f0a5"
+        const web3 = new Web3(url);
+        const fromWallet = await prisma.address.findFirst({
+            where: {
+                address: fromAddress,
+                chainId: chainId,
+                currency: currency
+            }
+        });
 
-//         const { url, usdcAddress } = chainConfig;
+        if (!fromWallet) {
+            return res.status(404).json({
+                error: "Wallet not found"
+            });
+        }
 
-//         const web3 = new Web3(url);
-//         const fromWallet = await prisma.address.findFirst({
-//             where: {
-//                 address: fromAddress,
-//                 chainId: chainId,
-//                 currency: currency
-//             }
-//         });
-
-//         if (!fromWallet) {
-//             return res.status(404).json({
-//                 error: "Wallet not found"
-//             });
-//         }
-
-//         const transactionCost = await getTransactionCost(url, fromAddress, toAddress, amount, contractAddress);
+        const transactionCost = await getTransactionCost(url, fromAddress, toAddress, amount, contractAddress);
 
 
-//         if ((fromWallet.balance - amount <= 0) && (fromWallet.balance - transactionCost) <= 0) {
-//             return res.status(400).json({
-//                 error: "Insufficient Balance"
-//             });
-//         }
+        if (fromWallet.balance < amount + transactionCost) {
+            return res.status(400).json({
+                error: "Insufficient Balance"
+            });
+        }
 
-//         const amountInWei = web3.utils.toWei(amount.toString(), 'mwei');
+        const amountInWei = web3.utils.toWei(amount.toString(), 'mwei');
 
-//         const tx = {
-//             nonce: await web3.eth.getTransactionCount(fromAddress, 'latest'),
-//             gasPrice: await web3.eth.getGasPrice(),
-//             to: contractAddress || usdcAddress,
-//             data: web3.eth.abi.encodeFunctionCall(
-//                 {
-//                     name: 'transfer',
-//                     type: 'function',
-//                     inputs: [
-//                         { name: '_to', type: 'address' },
-//                         { name: '_value', type: 'uint256' }
-//                     ]
-//                 },
-//                 [toAddress, amountInWei]
-//             ),
-//             gas: 100000,
-//             chainId: chainId
-//         };
+        const txData = web3.eth.abi.encodeFunctionCall(
+            {
+                name: 'transfer',
+                type: 'function',
+                inputs: [
+                    { name: '_to', type: 'address' },
+                    { name: '_value', type: 'uint256' }
+                ]
+            },
+            [toAddress, amountInWei]
+        );
+        // const tx = {
+        //     nonce: await web3.eth.getTransactionCount(fromAddress, 'latest'),
+        //     gasPrice: await web3.eth.getGasPrice(),
+        //     to: contractAddress || "0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582",
+        //     data: web3.eth.abi.encodeFunctionCall(
+        //         {
+        //             name: 'transfer',
+        //             type: 'function',
+        //             inputs: [
+        //                 { name: '_to', type: 'address' },
+        //                 { name: '_value', type: 'uint256' }
+        //             ]
+        //         },
+        //         [toAddress, amountInWei]
+        //     ),
+        //     gas: 100000,
+        //     chainId: chainId
+        // };
+        const tx: any = {
+            from: fromAddress,
+            to: contractAddress || "0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582",
+            data: txData,
+            chainId: chainId,
+            nonce: await web3.eth.getTransactionCount(fromAddress, 'latest'),
+            gasPrice: await web3.eth.getGasPrice(),
+        };
 
-//         const signedTx = await web3.eth.accounts.signTransaction(tx, privateKey) as unknown as {
-//             rawTransaction: string;
-//             transactionHash: string;
-//         };
+        const estimatedGas = await web3.eth.estimateGas({
+            ...tx,
+            value: '0x0' // Ensure no native token transfer
+        });
 
-//         if (!signedTx.rawTransaction) {
-//             return res.status(400).json({ error: 'Signing transaction failed' });
-//         }
+        tx.gas = estimatedGas;
 
-//         const receipt = await web3.eth.sendSignedTransaction(signedTx.rawTransaction);
+        const signedTx = await web3.eth.accounts.signTransaction(tx, privateKey) as unknown as {
+            rawTransaction: string;
+            transactionHash: string;
+        };
 
-//         await prisma.address.update({
-//             where: { id: fromWallet.id },
-//             data: { balance: fromWallet.balance - amount - transactionCost }
-//         });
+        if (!signedTx.rawTransaction) {
+            return res.status(400).json({ error: 'Signing transaction failed' });
+        }
 
-//         const transaction = await prisma.transaction.create({
-//             data: {
-//                 fromAddress: fromAddress,
-//                 toAddress: toAddress,
-//                 amount: amount,
-//                 currency: 'USDC',
-//                 transactionHash: receipt.transactionHash.toString(),
-//                 confirmed: false,
-//                 chainId: chainId
-//             }
-//         });
+        const receipt = await web3.eth.sendSignedTransaction(signedTx.rawTransaction);
 
-//         return res.status(200).json({
-//             message: "Transaction successful",
-//             transactionHash: receipt.transactionHash,
-//             transaction
-//         });
-//     } catch (error) {
-//         console.error(error);
-//         return res.status(500).json({ error: "An error occurred during the transaction" });
-//     }
-// }
+        await prisma.address.update({
+            where: { id: fromWallet.id },
+            data: { balance: fromWallet.balance - amount - transactionCost }
+        });
+
+        const transaction = await prisma.transaction.create({
+            data: {
+                fromAddress: fromAddress,
+                toAddress: toAddress,
+                amount: amount,
+                currency: 'USDC',
+                transactionHash: receipt.transactionHash.toString(),
+                confirmed: false,
+                chainId: chainId
+            }
+        });
+
+        return res.status(200).json({
+            message: "Transaction successful",
+            transactionHash: receipt.transactionHash,
+            transaction
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: "An error occurred during the transaction" });
+    }
+}
 
 export const getTransactionCost = async (rpcUrl: string, fromAddress: string, toAddress: string, amount: number, contractAddress: string): Promise<any> => {
 
@@ -147,73 +171,77 @@ export const getTransactionCost = async (rpcUrl: string, fromAddress: string, to
 export const updateTransaction = async (req: Request, res: Response): Promise<any> => {
     const { address } = req.body
     try {
-
         for (let i = 0; i < testNetChains.length; i++) {
             const chainId = testNetChains[i];
-            const chainConfigs = getChainConfig(address);
-            const config = chainConfigs[chainId];
-            if (!config) {
-                console.error(`No configuration found for chain ${chainId}`);
-                continue;
-            }
+            const actions = ["tokentx", "txlist"];
 
-            console.log(`Fetching transaction data from: ${config.url}`);
+            for (const action of actions) {
+                const chainConfigs = getChainConfig(address, action);
+                const config = chainConfigs[chainId];
+                if (!config) {
+                    console.error(`No configuration found for chain ${chainId}`);
+                    continue;
+                }
 
-            const response = await fetch(config.url);
-            if (!response.ok) {
-                throw new Error(`Failed to fetch data for chain ${chainId}, status: ${response.status}`);
-            }
+                console.log(`Fetching transaction data from: ${config.url}`);
 
-            const data = await response.json();
-            console.log("--------------------------------------------")
-            console.log(`Transaction data for chain ${chainId}:`, data);
-            console.log("--------------------------------------------")
+                const response = await fetch(config.url);
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch data for chain ${chainId}, status: ${response.status}`);
+                }
 
-            if (!data?.result?.length) {
-                console.warn("No transaction data found.");
-                return res.status(200).json({ message: "Transaction updated successfully" });
-            }
+                const data = await response.json();
+                console.log("--------------------------------------------")
+                console.log(`Transaction data for chain ${chainId}:`, data);
+                console.log("--------------------------------------------")
 
-            const parsedTransactions = data.result.map((txn: any) => ({
-                transactionHash: txn.hash,
-                fromAddress: txn.from,
-                toAddress: txn.to,
-                amount: parseFloat(txn.value) / Math.pow(10, parseInt(txn.tokenDecimal)),
-                currency: txn.tokenName,
-                totalTxnCost:
-                    (parseFloat(txn.gasUsed) * parseFloat(txn.gasPrice)) /
-                    Math.pow(10, 18),
-                chainId: chainId.toString(),
-                timeStamp: new Date(parseInt(txn.timeStamp) * 1000),
-                confirmed: parseInt(txn.confirmations) > 0,
-                nonce: parseInt(txn.nonce),
-            }));
+                if (!data?.result?.length) {
+                    console.warn("No transaction data found.");
+                    return res.status(200).json({ message: "Transaction updated successfully" });
+                }
 
-            console.log('Parsed Transactions:', parsedTransactions);
 
-            for (const transaction of parsedTransactions) {
-                try {
-                    const existingTransaction = await prisma.transaction.findUnique({
-                        where: { transactionHash: transaction.transactionHash },
-                    });
+                const parsedTransactions = data.result.map((txn: any) => ({
+                    transactionHash: txn.hash,
+                    fromAddress: txn.from,
+                    toAddress: txn.to,
+                    amount: parseFloat(txn.value) / Math.pow(10, parseInt(action === "tokentx" ? txn.tokenDecimal : "18")),
+                    currency: action === "tokentx" ? txn.tokenName : "POL",
+                    totalTxnCost:
+                        (parseFloat(txn.gasUsed) * parseFloat(txn.gasPrice)) /
+                        Math.pow(10, 18),
+                    chainId: chainId.toString(),
+                    timeStamp: new Date(parseInt(txn.timeStamp) * 1000),
+                    confirmed: parseInt(txn.confirmations) > 0,
+                    nonce: parseInt(txn.nonce),
+                }));
 
-                    if (existingTransaction) {
-                        console.log(`Transaction ${transaction.transactionHash} already exists.`);
-                        continue;
+
+                console.log('Parsed Transactions:', parsedTransactions);
+
+                for (const transaction of parsedTransactions) {
+                    try {
+                        const existingTransaction = await prisma.transaction.findUnique({
+                            where: { transactionHash: transaction.transactionHash },
+                        });
+
+                        if (existingTransaction) {
+                            console.log(`Transaction ${transaction.transactionHash} already exists.`);
+                            continue;
+                        }
+                        await prisma.transaction.create({
+                            data: transaction,
+                        });
+                        console.log(`Transaction ${transaction.transactionHash} saved successfully.`);
+
+                        await updateBalances(transaction);
+                    } catch (error) {
+                        console.error(`Error saving transaction ${transaction.transactionHash}:`, error);
                     }
-                    await prisma.transaction.create({
-                        data: transaction,
-                    });
-                    console.log(`Transaction ${transaction.transactionHash} saved successfully.`);
-
-                    await updateBalances(transaction);
-                } catch (error) {
-                    console.error(`Error saving transaction ${transaction.transactionHash}:`, error);
                 }
             }
-
-            return res.status(200).json({ message: "Transaction updated successfully" });
         }
+        return res.status(200).json({ message: "Transaction updated successfully" });
     } catch (error) {
         console.log(error);
     }
@@ -221,7 +249,7 @@ export const updateTransaction = async (req: Request, res: Response): Promise<an
 
 const updateBalances = async (transaction: any) => {
     const { fromAddress, toAddress, amount, chainId, currency } = transaction;
-    console.log(transaction);
+
     const fromAddressEntry = await prisma.address.findFirst({
         where: {
             address: { equals: fromAddress, mode: 'insensitive' },
@@ -229,7 +257,6 @@ const updateBalances = async (transaction: any) => {
             currency: currency
         }
     });
-    console.log(fromAddressEntry);
     const toAddressEntry = await prisma.address.findFirst({
         where: {
             address: { equals: toAddress, mode: 'insensitive' },
@@ -237,7 +264,6 @@ const updateBalances = async (transaction: any) => {
             currency: currency
         }
     });
-    console.log(toAddressEntry);
 
     if (fromAddressEntry && toAddressEntry) {
         console.log(`Both addresses are platform wallets. Handling internal transfer.`);
