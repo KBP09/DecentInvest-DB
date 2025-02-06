@@ -5,6 +5,7 @@ import bcrypt from 'bcrypt';
 import dotenv from 'dotenv'
 import Web3 from "web3";
 import { CurrencyType } from "@prisma/client";
+import { Request, Response } from "express";
 
 dotenv.config();
 
@@ -49,13 +50,13 @@ export const createWallet = async (email: string, password: string): Promise<Cre
                 account: true,
             },
         });
-    
+
         const accountId = newWallet.account[0].id;
-        
+
 
         // Create addresses for all supported tokens with a default balance of 0
         const addressPromises = tokenDetails.map(async (token) => {
-            const isNativeToken = token.tokenAddress==="0x0000000000000000000000000000000000000000";
+            const isNativeToken = token.tokenAddress === "0x0000000000000000000000000000000000000000";
             return await prisma.address.create({
                 data: {
                     walletId: newWallet.id,
@@ -64,8 +65,8 @@ export const createWallet = async (email: string, password: string): Promise<Cre
                     address: wallet.address,
                     tokenAddress: token.tokenAddress,
                     currency: token.symbol,
-                    currencyType: isNativeToken ? CurrencyType.NATIVE: CurrencyType.TOKEN,
-                    balance: 0, 
+                    currencyType: isNativeToken ? CurrencyType.NATIVE : CurrencyType.TOKEN,
+                    balance: 0,
                 },
             });
         });
@@ -98,3 +99,19 @@ export const createWallet = async (email: string, password: string): Promise<Cre
         throw new Error("Failed to generate wallet mnemonic.");
     }
 };
+
+export const getAllTokens = async (req: Request, res: Response): Promise<any> => {
+    const { address } = req.body;
+    try {
+        const addresses = await prisma.address.findMany({
+            where: {
+                address: address,
+            }
+        })
+
+        return res.status(200).json({ addresses });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ error: "An error occurred during getting the token" });
+    }
+}
