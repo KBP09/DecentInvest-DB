@@ -42,6 +42,14 @@ export const transaction = async (req: Request, res: Response): Promise<any> => 
             }
         });
 
+        const nativeToken = await prisma.tokenDetails.findFirst({
+            where: {
+                tokenAddress: "0x0000000000000000000000000000000000000000",
+                chainId: chainId
+            }
+        })
+
+
         if (!fromWallet) {
             return res.status(404).json({
                 error: "Wallet not found"
@@ -50,6 +58,27 @@ export const transaction = async (req: Request, res: Response): Promise<any> => 
 
         const transactionCost = await getTransactionCost(url, fromAddress, toAddress, amount, contractAddress);
 
+        if (nativeToken?.symbol !== currency) {
+            const fromNative = await prisma.address.findFirst({
+                where: {
+                    address: fromAddress,
+                    chainId: chainId,
+                    currencyType: "NATIVE",
+                }
+            });
+
+            if (!fromNative) {
+                return res.status(404).json({
+                    error: "Insufficient Balance"
+                });
+            }
+
+            if ((fromWallet.balance - amount <= 0) && (fromNative.balance - transactionCost <= 0)) {
+                return res.status(404).json({
+                    error: "Insufficient Balance"
+                });
+            }
+        }
 
         if (fromWallet.balance < amount + transactionCost) {
             return res.status(400).json({
