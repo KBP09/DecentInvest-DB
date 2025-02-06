@@ -69,21 +69,22 @@ export const transaction = async (req: Request, res: Response): Promise<any> => 
 
             if (!fromNative) {
                 return res.status(404).json({
-                    error: "Insufficient Balance"
+                    error: "Insufficient Balance 1"
                 });
             }
 
             if ((fromWallet.balance - amount <= 0) && (fromNative.balance - transactionCost <= 0)) {
                 return res.status(404).json({
-                    error: "Insufficient Balance"
+                    error: "Insufficient Balance 2"
                 });
             }
         }
-
-        if (fromWallet.balance < amount + transactionCost) {
-            return res.status(400).json({
-                error: "Insufficient Balance"
-            });
+        else {
+            if (fromWallet.balance - (amount + transactionCost) <= 0) {
+                return res.status(400).json({
+                    error: "Insufficient Balance 3"
+                });
+            }
         }
 
         const amountInWei = web3.utils.toWei(amount.toString(), 'mwei');
@@ -99,36 +100,19 @@ export const transaction = async (req: Request, res: Response): Promise<any> => 
             },
             [toAddress, amountInWei]
         );
-        // const tx = {
-        //     nonce: await web3.eth.getTransactionCount(fromAddress, 'latest'),
-        //     gasPrice: await web3.eth.getGasPrice(),
-        //     to: contractAddress || "0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582",
-        //     data: web3.eth.abi.encodeFunctionCall(
-        //         {
-        //             name: 'transfer',
-        //             type: 'function',
-        //             inputs: [
-        //                 { name: '_to', type: 'address' },
-        //                 { name: '_value', type: 'uint256' }
-        //             ]
-        //         },
-        //         [toAddress, amountInWei]
-        //     ),
-        //     gas: 100000,
-        //     chainId: chainId
-        // };
+       
         const tx: any = {
             from: fromAddress,
             to: contractAddress || "0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582",
             data: txData,
             chainId: chainId,
-            nonce: await web3.eth.getTransactionCount(fromAddress, 'latest'),
+            nonce: await web3.eth.getTransactionCount(fromAddress,"pending"),
             gasPrice: await web3.eth.getGasPrice(),
         };
 
         const estimatedGas = await web3.eth.estimateGas({
             ...tx,
-            value: '0x0' // Ensure no native token transfer
+            value: '0x0'
         });
 
         tx.gas = estimatedGas;
@@ -142,23 +126,54 @@ export const transaction = async (req: Request, res: Response): Promise<any> => 
             return res.status(400).json({ error: 'Signing transaction failed' });
         }
 
-        const receipt = await web3.eth.sendSignedTransaction(signedTx.rawTransaction);
-
-        await prisma.address.update({
-            where: { id: fromWallet.id },
-            data: { balance: fromWallet.balance - amount - transactionCost }
-        });
-
-        const transaction = await prisma.transaction.create({
+        const transactionUpdate = await prisma.transaction.create({
             data: {
                 fromAddress: fromAddress,
                 toAddress: toAddress,
                 amount: amount,
                 currency: 'USDC',
-                transactionHash: receipt.transactionHash.toString(),
+                transactionHash: signedTx.transactionHash,
                 confirmed: false,
-                chainId: chainId
+                chainId: chainId,
+                nonce: Number(tx.nonce)
             }
+        });
+
+        const receipt = await web3.eth.sendSignedTransaction(signedTx.rawTransaction);
+
+        if (nativeToken?.symbol === currency) {
+            await prisma.address.update({
+                where: { id: fromWallet.id },
+                data: { balance: fromWallet.balance - amount - transactionCost }
+            });
+        } else {
+            await prisma.address.update({
+                where: { id: fromWallet.id },
+                data: { balance: fromWallet.balance - amount }
+            });
+
+            const fromNative = await prisma.address.findFirst({
+                where: {
+                    address: fromAddress,
+                    chainId: chainId,
+                    currencyType: "NATIVE",
+                }
+            });
+            if (!fromNative) {
+                return res.status(404).json({
+                    error: "native token not found"
+                });
+            }
+
+            await prisma.address.update({
+                where: { id: fromNative.id },
+                data: { balance: fromNative.balance - transactionCost },
+            })
+        }
+
+        await prisma.transaction.update({
+            where: { id: transactionUpdate.id },
+            data: { confirmed: true }
         });
 
         return res.status(200).json({
@@ -166,6 +181,7 @@ export const transaction = async (req: Request, res: Response): Promise<any> => 
             transactionHash: receipt.transactionHash,
             transaction
         });
+
     } catch (error) {
         console.error(error);
         return res.status(500).json({ error: "An error occurred during the transaction" });
