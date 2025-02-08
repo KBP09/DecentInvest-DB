@@ -1,8 +1,8 @@
 import { error } from "console";
 import prisma from "../DB/db.config";
 import dotenv from 'dotenv';
-dotenv.config();
 import { Request, Response } from 'express';
+dotenv.config();
 
 export const getProfile = async (req: Request, res: Response): Promise<any> => {
     const { userId } = req.body;
