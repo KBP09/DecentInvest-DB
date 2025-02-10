@@ -101,13 +101,13 @@ export const transaction = async (req: Request, res: Response): Promise<any> => 
             },
             [toAddress, amountInWei]
         );
-       
+
         const tx: any = {
             from: fromAddress,
             to: contractAddress || "0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582",
             data: txData,
             chainId: chainId,
-            nonce: await web3.eth.getTransactionCount(fromAddress,"pending"),
+            nonce: await web3.eth.getTransactionCount(fromAddress, "pending"),
             gasPrice: await web3.eth.getGasPrice(),
         };
 
@@ -345,17 +345,32 @@ const updateBalances = async (transaction: any) => {
     }
 }
 
-export const getAllTransactions = async(req:Request,res:Response): Promise<any> => {
-    const {address} = req.body;
-    try{
+export const getAllTransactions = async (req: Request, res: Response): Promise<any> => {
+    const { address } = req.body;
+    try {
         const transactions = await prisma.transaction.findMany({
-            where:{
-                fromAddress:address
+            where: {
+                fromAddress: {
+                    equals: address,
+                    mode: "insensitive"
+                }
+            },
+        });
+        const inTransactions = await prisma.transaction.findMany({
+            where: {
+                toAddress: {
+                    equals: address,
+                    mode: "insensitive"
+                }
             }
         });
-        return res.status(200).json({transactions});
-    }catch(error){
+       
+        return res.status(200).json({
+            outTransactions: transactions,
+            inTransactions: inTransactions
+        });
+    } catch (error) {
         console.log(error);
-        return res.status(500).json({error:"internal server error"});
+        return res.status(500).json({ error: "internal server error" });
     }
 }
