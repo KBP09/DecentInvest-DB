@@ -14,9 +14,10 @@ interface ChainConfig {
     usdcAddress: string;
 }
 
+
 const getChainConfig = (address: string, action: string): Record<number, ChainConfig> => ({
     80002: {
-        url: `https://api-amoy.polygonscan.com/api?module=account&action=${action}&contractaddress=0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582&address=${address}&page=1&offset=2&sort=asc&apikey=${polApiKey}`,
+        url: `https://api-amoy.polygonscan.com/api?module=account&action=${action}&contractaddress=0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582&address=${address}&apikey=${polApiKey}`,
         usdcAddress: '0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582',
     }
 });
