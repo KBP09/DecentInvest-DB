@@ -19,7 +19,7 @@ const getChainConfig = (address: string, action: string): Record<number, ChainCo
     80002: {
         url: `https://api-amoy.polygonscan.com/api?module=account&action=${action}&contractaddress=0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582&address=${address}&apikey=${polApiKey}`,
         usdcAddress: '0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582',
-    }
+    } //Polygon-amoy
 });
 
 const providerListInfuria = {
@@ -342,5 +342,20 @@ const updateBalances = async (transaction: any) => {
             data: { balance: { increment: amount } },
         });
         console.log(`Updated balance for receiver address: ${toAddress}`);
+    }
+}
+
+export const getAllTransactions = async(req:Request,res:Response): Promise<any> => {
+    const {address} = req.body;
+    try{
+        const transactions = await prisma.transaction.findMany({
+            where:{
+                fromAddress:address
+            }
+        });
+        return res.status(200).json({transactions});
+    }catch(error){
+        console.log(error);
+        return res.status(500).json({error:"internal server error"});
     }
 }
