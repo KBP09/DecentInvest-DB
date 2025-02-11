@@ -94,12 +94,12 @@ export const setProfile = async (req: Request, res: Response): Promise<any> => {
             }
         });
 
-        if (user?.isProfileComplete===false) {
+        if (user?.isProfileComplete === false) {
             if (user.role === 'STARTUP_OWNER') {
                 const ceoProfile = await prisma.cEOProfile.create({
                     data: {
                         user: {
-                            connect:{id:userId},
+                            connect: { id: userId },
                         },
                         ceoName: name,
                         about: about,
@@ -119,7 +119,7 @@ export const setProfile = async (req: Request, res: Response): Promise<any> => {
                 const investorProfile = await prisma.investorProfile.create({
                     data: {
                         user: {
-                            connect:{id:userId},
+                            connect: { id: userId },
                         },
                         investorName: name,
                         about: about,
@@ -146,16 +146,32 @@ export const setProfile = async (req: Request, res: Response): Promise<any> => {
 }
 
 export const profileCheck = async (req: Request, res: Response): Promise<any> => {
-    const {userId} = req.body;
+    const { userId } = req.body;
 
-    try{
+    try {
         const user = await prisma.user.findUnique({
-            where:{
-                id:userId
+            where: {
+                id: userId
             }
         })
         return res.status(200).json(user?.isProfileComplete);
-    }catch(error){
-        return res.status(500).json({error:"something went wrong"});
+    } catch (error) {
+        return res.status(500).json({ error: "something went wrong" });
+    }
+}
+
+export const getAllStartup = async (req: Request, res: Response): Promise<any> => {
+    const { userId } = req.body;
+
+    try {
+        const startup = await prisma.startup.findMany({
+            where: {
+                ownerId: userId,
+            }
+        });
+
+        return res.status(200).json(startup);
+    } catch (error) {
+        return res.status(500).json({ error: "something went wrong" });
     }
 }
