@@ -25,6 +25,6 @@ app.use("/create-startup", authenticateToken, createStartup);
 app.use("/transaction", authenticateToken, transaction);
 app.use("/updateTransaction", authenticateToken, updateTransaction);
 app.use("/getAllTokens", authenticateToken, getAllTokens);
-app.use("/recents",authenticateToken,getAllTransactions);
+app.use("/recents",getAllTransactions);
 
 export default app;

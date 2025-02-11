@@ -128,6 +128,7 @@ export const login = async (req: Request, res: Response): Promise<any> => {
                         addresses:{
                             select:{
                                 tokenAddress:true,
+                                address:true,
                                 currency:true,
                                 balance:true,
                                 chainId:true,

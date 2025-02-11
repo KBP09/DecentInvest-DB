@@ -351,24 +351,26 @@ export const getAllTransactions = async (req: Request, res: Response): Promise<a
     try {
         const transactions = await prisma.transaction.findMany({
             where: {
-                fromAddress: {
-                    equals: address,
-                    mode: "insensitive"
-                }
+                OR: [
+                    {
+                        fromAddress: {
+                            equals: address,
+                            mode: "insensitive"
+                        }
+                    },
+                    {
+                        toAddress: {
+                            equals: address,
+                            mode: "insensitive"
+                        }
+                    }
+                ]
             },
         });
-        const inTransactions = await prisma.transaction.findMany({
-            where: {
-                toAddress: {
-                    equals: address,
-                    mode: "insensitive"
-                }
-            }
-        });
-       
+
+
         return res.status(200).json({
-            outTransactions: transactions,
-            inTransactions: inTransactions
+            transactions
         });
     } catch (error) {
         console.log(error);
