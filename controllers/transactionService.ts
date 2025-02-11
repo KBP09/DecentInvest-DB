@@ -260,6 +260,7 @@ export const updateTransaction = async (req: Request, res: Response): Promise<an
                     timeStamp: new Date(parseInt(txn.timeStamp) * 1000),
                     confirmed: parseInt(txn.confirmations) > 0,
                     nonce: parseInt(txn.nonce),
+                    type: txn.from === address ? "out" : "in",
                 }));
 
 

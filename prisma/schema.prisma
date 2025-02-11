@@ -114,7 +114,7 @@ model TokenDetails {
   id           String @id @default(uuid()) @db.Uuid
   name         String
   symbol       String
-  chainId      String 
+  chainId      String
   tokenAddress String
   decimals     Int    @default(6)
   rpc_url      String @default("")
@@ -132,4 +132,5 @@ model Transaction {
   timeStamp       DateTime @default(now())
   confirmed       Boolean
   nonce           Int      @default(0)
+  type            String   @default("")
 }
