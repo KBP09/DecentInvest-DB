@@ -39,7 +39,7 @@ model CEOProfile {
   profilePicture   String?
   ceoName          String
   about            String
-  birthday         DateTime
+  birthday         String
   totalInvestments Float    @default(0)
   startupsCreated  Int      @default(0)
   userId           String   @unique @db.Uuid

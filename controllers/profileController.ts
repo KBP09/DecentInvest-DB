@@ -103,7 +103,10 @@ export const setProfile = async (req: Request, res: Response): Promise<any> => {
                         },
                         ceoName: name,
                         about: about,
-                        birthday: new Date(birthday),
+                        birthday: birthday,
+                        twitter:twitter,
+                        linkedin:linkedin,
+                        github:github
                     }
                 });
                 const update = await prisma.user.update({
@@ -123,7 +126,7 @@ export const setProfile = async (req: Request, res: Response): Promise<any> => {
                         },
                         investorName: name,
                         about: about,
-                        birthday: new Date(birthday),
+                        birthday: birthday,
                     }
                 });
                 const update = await prisma.user.update({
