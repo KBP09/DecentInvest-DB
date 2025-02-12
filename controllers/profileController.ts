@@ -85,7 +85,7 @@ export const createStartup = async (req: Request, res: Response): Promise<any> =
 }
 
 export const setProfile = async (req: Request, res: Response): Promise<any> => {
-    const { userId, name, about, birthday } = req.body;
+    const { userId, name, about, birthday,twitter,linkedin,github } = req.body;
 
     try {
         const user = await prisma.user.findUnique({

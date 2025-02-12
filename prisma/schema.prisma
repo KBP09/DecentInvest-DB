@@ -44,6 +44,9 @@ model CEOProfile {
   startupsCreated  Int      @default(0)
   userId           String   @unique @db.Uuid
   user             User     @relation(fields: [userId], references: [id])
+  twitter          String   @default("")
+  github           String   @default("")
+  linkedin         String   @default("")
 }
 
 model InvestorProfile {
