@@ -1,4 +1,3 @@
-import { error } from "console";
 import prisma from "../DB/db.config";
 import dotenv from 'dotenv';
 import { Request, Response } from 'express';
@@ -44,6 +43,30 @@ export const getProfile = async (req: Request, res: Response): Promise<any> => {
     }
 }
 
+export const publicProfile = async (req: Request, res: Response): Promise<any> => {
+    const { profileId } = req.params;
+
+    try {
+        const { id } = req.params;
+        const user = await prisma.user.findUnique({
+            where: { id },
+            include: {
+                ceoProfile: true,
+                investorProfile: true,
+                startups: true,
+            }
+        });
+
+        if (!user) return res.status(404).json({ message: "User not found" });
+
+        res.json(user);
+    } catch (error) {
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
+
+
 export const createStartup = async (req: Request, res: Response): Promise<any> => {
     const { userId, ceoName, name, description, fundingGoal, websiteLink } = req.body;
 
@@ -85,7 +108,7 @@ export const createStartup = async (req: Request, res: Response): Promise<any> =
 }
 
 export const setProfile = async (req: Request, res: Response): Promise<any> => {
-    const { userId, name, about, birthday,twitter,linkedin,github } = req.body;
+    const { userId, name, about, birthday, twitter, linkedin, github } = req.body;
 
     try {
         const user = await prisma.user.findUnique({
@@ -104,11 +127,12 @@ export const setProfile = async (req: Request, res: Response): Promise<any> => {
                         ceoName: name,
                         about: about,
                         birthday: birthday,
-                        twitter:twitter,
-                        linkedin:linkedin,
-                        github:github
+                        twitter: twitter,
+                        linkedin: linkedin,
+                        github: github
                     }
                 });
+
                 const update = await prisma.user.update({
                     where: {
                         id: userId,
@@ -117,6 +141,7 @@ export const setProfile = async (req: Request, res: Response): Promise<any> => {
                         isProfileComplete: true
                     }
                 });
+
                 return res.status(200).json({ ceoProfile });
             } else if (user.role === 'INVESTOR') {
                 const investorProfile = await prisma.investorProfile.create({
