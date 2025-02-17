@@ -203,3 +203,19 @@ export const getAllStartup = async (req: Request, res: Response): Promise<any> =
         return res.status(500).json({ error: "something went wrong" });
     }
 }
+
+export const getUserRole = async(req:Request,res:Response): Promise<any> =>{
+    const {userId} = req.body;
+
+    try{
+        const user = await prisma.user.findUnique({
+            where:{
+                id:userId
+            }
+        });
+
+        return res.status(200).json(user?.role);
+    }catch(error){
+        return res.status(500).json({error: "something went wrong"});
+    }
+}
