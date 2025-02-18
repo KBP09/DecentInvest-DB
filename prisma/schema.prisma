@@ -22,31 +22,36 @@ model User {
 }
 
 model Startup {
-  id          String       @id @default(uuid()) @db.Uuid
-  name        String
-  ceoName     String
-  description String
-  fundingGoal Float
-  websiteLink String
-  createdAt   DateTime     @default(now())
-  ownerId     String       @db.Uuid
-  owner       User         @relation("StartupOwner", fields: [ownerId], references: [id])
-  investments Investment[]
+  id           String       @id @default(uuid()) @db.Uuid
+  name         String
+  ceoName      String
+  description  String
+  fundingGoal  Float
+  websiteLink  String
+  companySize  Int
+  otherFounder String?
+  originatedOn DateTime?
+  whitePaper   String
+  youtubeLink  String
+  createdAt    DateTime     @default(now())
+  ownerId      String       @db.Uuid
+  owner        User         @relation("StartupOwner", fields: [ownerId], references: [id])
+  investments  Investment[]
 }
 
 model CEOProfile {
-  id               String   @id @default(uuid()) @db.Uuid
+  id               String  @id @default(uuid()) @db.Uuid
   profilePicture   String?
   ceoName          String
   about            String
   birthday         String
-  totalInvestments Float    @default(0)
-  startupsCreated  Int      @default(0)
-  userId           String   @unique @db.Uuid
-  user             User     @relation(fields: [userId], references: [id])
-  twitter          String   @default("")
-  github           String   @default("")
-  linkedin         String   @default("")
+  totalInvestments Float   @default(0)
+  startupsCreated  Int     @default(0)
+  userId           String  @unique @db.Uuid
+  user             User    @relation(fields: [userId], references: [id])
+  twitter          String  @default("")
+  github           String  @default("")
+  linkedin         String  @default("")
 }
 
 model InvestorProfile {

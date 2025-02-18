@@ -378,7 +378,7 @@ export const getAllTransactions = async (req: Request, res: Response): Promise<a
     }
 }
 
-export const getUserChainBalance = async (req: Request, res: Response) => {
+export const getUserChainBalance = async (req: Request, res: Response): Promise<any> => {
     const { walletId, address, chainId } = req.body;
     try {
         const wallet = await prisma.address.findFirst({

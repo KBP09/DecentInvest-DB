@@ -1,7 +1,7 @@
 import express from 'express'
 import authRoute from './authRoute'
 import { getProfile, createStartup, setProfile, profileCheck, getUserRole } from '../controllers/profileController';
-import { transaction, updateTransaction, getAllTransactions } from '../controllers/transactionService';
+import { transaction, updateTransaction, getAllTransactions, getUserChainBalance } from '../controllers/transactionService';
 import { authenticateToken } from '../controllers/authController';
 import { getAllTokens } from '../controllers/walletService';
 import cors from 'cors';
@@ -21,10 +21,11 @@ app.use("/auth", authRoute);
 app.use("/setProfile", authenticateToken, setProfile);
 app.use("/profileCheck", profileCheck);
 app.use("/getProfile", authenticateToken, getProfile);
-app.use("/create-startup", authenticateToken, createStartup);
+app.use("/createStartup", authenticateToken, createStartup);
 app.use("/transaction", authenticateToken, transaction);
 app.use("/updateTransaction", authenticateToken, updateTransaction);
 app.use("/getAllTokens", authenticateToken, getAllTokens);
+app.use("/getBalance",authenticateToken,getUserChainBalance);
 app.use("/getUserRole", authenticateToken, getUserRole);
 app.use("/recents", getAllTransactions);
 
