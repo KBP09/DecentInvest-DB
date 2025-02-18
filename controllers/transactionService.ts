@@ -377,3 +377,19 @@ export const getAllTransactions = async (req: Request, res: Response): Promise<a
         return res.status(500).json({ error: "internal server error" });
     }
 }
+
+export const getUserChainBalance = async (req: Request, res: Response) => {
+    const { walletId, address, chainId } = req.body;
+    try {
+        const wallet = await prisma.address.findFirst({
+            where: {
+                walletId: walletId,
+                chainId: chainId,
+                address: address
+            }
+        });
+        return res.status(200).json({ balance: wallet?.balance });
+    } catch (error) {
+        return res.status(500).json({ error: error });
+    }
+}
