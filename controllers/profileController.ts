@@ -68,7 +68,7 @@ export const publicProfile = async (req: Request, res: Response): Promise<any> =
 
 
 export const createStartup = async (req: Request, res: Response): Promise<any> => {
-    const { userId, ceoName, name, description, fundingGoal, websiteLink } = req.body;
+    const { userId, ceoName, name, description, fundingGoal, companySize, otherFounder, originatedOn, whitePaper, youtubeLink, websiteLink } = req.body;
 
     try {
         const user = await prisma.user.findUnique({
@@ -89,7 +89,12 @@ export const createStartup = async (req: Request, res: Response): Promise<any> =
                 fundingGoal: fundingGoal,
                 websiteLink: websiteLink,
                 ceoName: ceoName,
-                ownerId: userId
+                ownerId: userId,
+                companySize: companySize,
+                otherFounder: otherFounder,
+                originatedOn: originatedOn,
+                whitePaper: whitePaper,
+                youtubeLink: youtubeLink,
             }
         });
 
@@ -204,18 +209,18 @@ export const getAllStartup = async (req: Request, res: Response): Promise<any> =
     }
 }
 
-export const getUserRole = async(req:Request,res:Response): Promise<any> =>{
-    const {userId} = req.body;
+export const getUserRole = async (req: Request, res: Response): Promise<any> => {
+    const { userId } = req.body;
 
-    try{
+    try {
         const user = await prisma.user.findUnique({
-            where:{
-                id:userId
+            where: {
+                id: userId
             }
         });
 
-        return res.status(200).json({role: user?.role});
-    }catch(error){
-        return res.status(500).json({error: "something went wrong"});
+        return res.status(200).json({ role: user?.role });
+    } catch (error) {
+        return res.status(500).json({ error: "something went wrong" });
     }
 }
