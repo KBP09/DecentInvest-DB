@@ -37,6 +37,20 @@ model Startup {
   ownerId      String       @db.Uuid
   owner        User         @relation("StartupOwner", fields: [ownerId], references: [id])
   investments  Investment[]
+  NFT          NFT[]
+}
+
+model NFT {
+  id          String   @id @default(uuid()) @db.Uuid
+  startupId   String   @unique @db.Uuid 
+  startup     Startup  @relation(fields: [startupId], references: [id])
+  tokenId     String?  @unique 
+  imageCID    String 
+  metadataCID String? 
+  owner       String? 
+  txHash      String? 
+  createdAt   DateTime @default(now())
+  status      String   @default("pending") 
 }
 
 model CEOProfile {
