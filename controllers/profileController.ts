@@ -66,53 +66,6 @@ export const publicProfile = async (req: Request, res: Response): Promise<any> =
     }
 };
 
-
-
-export const createStartup = async (req: Request, res: Response): Promise<any> => {
-    const { userId, ceoName, name, description, fundingGoal, companySize, otherFounder, originatedOn, whitePaper, youtubeLink, websiteLink } = req.body;
-
-    try {
-        const user = await prisma.user.findUnique({
-            where: {
-                id: userId
-            },
-            include: { ceoProfile: true }
-        });
-
-        if (!user || !user.ceoProfile) {
-            return res.status(403).json({ error: "You must be a CEO to create a startup." });
-        }
-
-        const newStartup = await prisma.startup.create({
-            data: {
-                name: name,
-                description: description,
-                fundingGoal: fundingGoal,
-                websiteLink: websiteLink,
-                ceoName: ceoName,
-                ownerId: userId,
-                companySize: companySize,
-                otherFounder: otherFounder,
-                originatedOn: originatedOn,
-                whitePaper: whitePaper,
-                youtubeLink: youtubeLink,
-            }
-        });
-
-        await prisma.cEOProfile.update({
-            where: { userId: userId },
-            data: {
-                startupsCreated: { increment: 1 },
-            },
-        });
-        return res.status(201).json({ message: 'Startup created successfully', newStartup });
-
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ error: 'Error creating startup' });
-    }
-}
-
 export const setProfile = async (req: Request, res: Response): Promise<any> => {
     const { userId, name, about, birthday, twitter, linkedin, github } = req.body;
 

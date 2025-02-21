@@ -22,7 +22,7 @@ app.use("/auth", authRoute);
 app.use("/setProfile", authenticateToken, setProfile);
 app.use("/profileCheck", profileCheck);
 app.use("/getProfile", authenticateToken, getProfile);
-app.use("/createStartup", authenticateToken, createStartup);
+app.use("/createStartup", createStartup);
 app.use("/transaction", authenticateToken, transaction);
 app.use("/updateTransaction", authenticateToken, updateTransaction);
 app.use("/getAllTokens", authenticateToken, getAllTokens);

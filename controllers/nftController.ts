@@ -13,14 +13,14 @@ const PINATA_SECRET_API_KEY = process.env.PINATA_SECRET_API_KEY;
 const storage = multer.memoryStorage();
 const upload = multer({ storage }).single("image");
 
-export const uploadToIPFS = async (fileBuffer: Buffer, fileType: string) => {
+export const uploadToIPFS = async (fileBuffer: Buffer, filename: string) => {
     const formData = new FormData();
-    formData.append("file", fileBuffer, { contentType: fileType });
+    formData.append("file", fileBuffer, { filename: filename });
 
     const response = await axios.post("https://api.pinata.cloud/pinning/pinFileToIPFS", formData, {
         headers: {
-            pinata_api_key: process.env.PINATA_API_KEY,
-            pinata_secret_api_key: process.env.PINATA_SECRET_KEY,
+            pinata_api_key: PINATA_API_KEY,
+            pinata_secret_api_key: PINATA_SECRET_API_KEY,
             "Content-Type": "multipart/form-data",
         },
     });
@@ -31,8 +31,8 @@ export const uploadToIPFS = async (fileBuffer: Buffer, fileType: string) => {
 const uploadMetadataToIPFS = async (metadata: object) => {
     const response = await axios.post("https://api.pinata.cloud/pinning/pinJSONToIPFS", metadata, {
         headers: {
-            pinata_api_key: process.env.PINATA_API_KEY,
-            pinata_secret_api_key: process.env.PINATA_SECRET_KEY,
+            pinata_api_key: PINATA_API_KEY,
+            pinata_secret_api_key: PINATA_SECRET_API_KEY,
         },
     });
     return response.data.IpfsHash;
@@ -49,7 +49,7 @@ export const createStartup = async (req: Request, res: Response): Promise<any> =
         try {
             const { userId, ceoName, name, description, fundingGoal, companySize, otherFounder, originatedOn, whitePaper, youtubeLink, websiteLink } = req.body;
 
-            const logoCID = await uploadToIPFS(req.file.buffer, req.file.mimetype);
+            const logoCID = await uploadToIPFS(req.file.buffer, req.file.originalname);
             const logoUrl = `https://lavender-late-trout-749.mypinata.cloud/ipfs/${logoCID}`;
 
             const user = await prisma.user.findUnique({
@@ -67,11 +67,11 @@ export const createStartup = async (req: Request, res: Response): Promise<any> =
                 data: {
                     name: name,
                     description: description,
-                    fundingGoal: fundingGoal,
+                    fundingGoal: parseInt(fundingGoal),
                     websiteLink: websiteLink,
                     ceoName: ceoName,
                     ownerId: userId,
-                    companySize: companySize,
+                    companySize: parseInt(companySize),
                     otherFounder: otherFounder,
                     originatedOn: originatedOn,
                     whitePaper: whitePaper,
