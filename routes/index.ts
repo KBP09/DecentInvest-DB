@@ -1,10 +1,10 @@
 import express from 'express'
 import authRoute from './authRoute'
-import { getProfile, createStartup, setProfile, profileCheck, getUserRole } from '../controllers/profileController';
+import { getProfile, setProfile, profileCheck, getUserRole } from '../controllers/profileController';
 import { transaction, updateTransaction, getAllTransactions, getUserChainBalance } from '../controllers/transactionService';
 import { authenticateToken } from '../controllers/authController';
 import { getAllTokens } from '../controllers/walletService';
-import { uploadImage } from '../controllers/nftController';
+import { createStartup } from '../controllers/nftController';
 import cors from 'cors';
 
 const app = express();
@@ -29,6 +29,5 @@ app.use("/getAllTokens", authenticateToken, getAllTokens);
 app.use("/getBalance",authenticateToken,getUserChainBalance);
 app.use("/getUserRole", authenticateToken, getUserRole);
 app.use("/recents", getAllTransactions);
-app.use("/upload",uploadImage);
 
 export default app;
