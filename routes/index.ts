@@ -4,7 +4,7 @@ import { getProfile, setProfile, profileCheck, getUserRole } from '../controller
 import { transaction, updateTransaction, getAllTransactions, getUserChainBalance } from '../controllers/transactionService';
 import { authenticateToken } from '../controllers/authController';
 import { getAllTokens } from '../controllers/walletService';
-import { createStartup } from '../controllers/nftController';
+import { createStartup, getStartup } from '../controllers/nftController';
 import cors from 'cors';
 
 const app = express();
@@ -26,8 +26,9 @@ app.use("/createStartup", createStartup);
 app.use("/transaction", authenticateToken, transaction);
 app.use("/updateTransaction", authenticateToken, updateTransaction);
 app.use("/getAllTokens", authenticateToken, getAllTokens);
-app.use("/getBalance",authenticateToken,getUserChainBalance);
+app.use("/getBalance", authenticateToken, getUserChainBalance);
 app.use("/getUserRole", authenticateToken, getUserRole);
 app.use("/recents", getAllTransactions);
+app.use("/startup/:startupId", getStartup);
 
 export default app;

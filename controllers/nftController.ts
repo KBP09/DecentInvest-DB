@@ -147,9 +147,6 @@ export const getStartup = async (req: Request, res: Response): Promise<any> => {
             where:{
                 id:startupId
             },
-            include:{
-                owner:true,
-            }
         });
 
         if(!startup){
