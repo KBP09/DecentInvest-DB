@@ -4,6 +4,7 @@ import axios from "axios";
 import dotenv from 'dotenv';
 import prisma from "../DB/db.config";
 import FormData from "form-data";
+import { start } from "repl";
 
 dotenv.config();
 
@@ -105,7 +106,7 @@ export const createStartup = async (req: Request, res: Response): Promise<any> =
                 },
             });
 
-            res.status(200).json({ message: "Startup & NFT Created", newStartup, nft, logoUrl, metadataUrl });
+            res.status(200).json({ newStartup, nft, logoUrl, metadataUrl });
         } catch (error) {
             console.error(error);
             return res.status(500).json({ error: 'Error creating startup' });
@@ -133,3 +134,31 @@ export const updateNFT = async (req: Request, res: Response) => {
         res.status(500).json({ error: "Failed to update NFT" });
     }
 };
+
+export const getStartup = async (req: Request, res: Response): Promise<any> => {
+    try{
+        const { startupId } = req.params;
+
+        if(!startupId){
+            return res.status(400).json({error:"Startup ID is required"});
+        }
+
+        const startup = await prisma.startup.findUnique({
+            where:{
+                id:startupId
+            },
+            include:{
+                owner:true,
+            }
+        });
+
+        if(!startup){
+            return res.status(404).json({error:"Startup not found"});
+        }
+
+        res.status(200).json(startup);
+    }catch(error){
+        console.log(error);
+        res.status(500).json({error:"Internal Server Error"});
+    }
+}
