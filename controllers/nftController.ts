@@ -77,6 +77,7 @@ export const createStartup = async (req: Request, res: Response): Promise<any> =
                     originatedOn: originatedOn,
                     whitePaper: whitePaper,
                     youtubeLink: youtubeLink,
+                    logoLink: logoUrl,
                 }
             });
 
