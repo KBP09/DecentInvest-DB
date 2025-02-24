@@ -34,6 +34,7 @@ model Startup {
   whitePaper   String
   youtubeLink  String
   logoLink     String       @default("")
+  metaDataLink String       @default("")
   createdAt    DateTime     @default(now())
   ownerId      String       @db.Uuid
   owner        User         @relation("StartupOwner", fields: [ownerId], references: [id])
@@ -45,7 +46,7 @@ model NFT {
   id          String   @id @default(uuid()) @db.Uuid
   startupId   String   @unique @db.Uuid
   startup     Startup  @relation(fields: [startupId], references: [id])
-  tokenId     String?  @unique
+  tokenId     Int      @unique @default(autoincrement())
   imageCID    String
   metadataCID String?
   owner       String?

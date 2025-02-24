@@ -4,7 +4,6 @@ import axios from "axios";
 import dotenv from 'dotenv';
 import prisma from "../DB/db.config";
 import FormData from "form-data";
-import { start } from "repl";
 
 dotenv.config();
 
@@ -117,19 +116,18 @@ export const createStartup = async (req: Request, res: Response): Promise<any> =
 
 export const updateNFT = async (req: Request, res: Response) => {
     try {
-        const { startupId, tokenId, txHash, userAddress } = req.body;
+        const { startupId, txHash, userAddress } = req.body;
 
         await prisma.nFT.update({
             where: { startupId },
             data: {
-                tokenId,
                 txHash,
                 owner: userAddress,
                 status: "minted",
             },
         });
 
-        res.status(200).json({ message: "NFT Record Updated", txHash, tokenId });
+        res.status(200).json({ message: "NFT Record Updated", txHash});
     } catch (error) {
         console.error("Error updating NFT:", error);
         res.status(500).json({ error: "Failed to update NFT" });
@@ -139,9 +137,9 @@ export const updateNFT = async (req: Request, res: Response) => {
 export const getStartup = async (req: Request, res: Response): Promise<any> => {
     try{
         const { startupId } = req.params;
-
-        if(!startupId){
-            return res.status(400).json({error:"Startup ID is required"});
+    
+        if (!startupId) {
+            return res.status(400).json({ error: "Startup id is required" });
         }
 
         const startup = await prisma.startup.findUnique({
