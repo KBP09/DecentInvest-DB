@@ -1,7 +1,6 @@
 import prisma from "../DB/db.config";
 import dotenv from 'dotenv';
 import { Request, Response } from 'express';
-import { uploadToIPFS } from "./nftController";
 dotenv.config();
 
 export const getProfile = async (req: Request, res: Response): Promise<any> => {

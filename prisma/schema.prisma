@@ -40,6 +40,7 @@ model Startup {
   owner        User         @relation("StartupOwner", fields: [ownerId], references: [id])
   investments  Investment[]
   NFT          NFT[]
+  isMinted     Boolean      @default(false)
 }
 
 model NFT {
