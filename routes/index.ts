@@ -31,6 +31,6 @@ app.use("/getUserRole", authenticateToken, getUserRole);
 app.use("/recents", getAllTransactions);
 app.use("/startup/:startupId", getStartup);
 app.use("/updateNFT", authenticateToken, updateNFT);
-app.use("/getAllStartup",getAllStartup)
+app.use("/getAllStartup",getAllStartup);
 
 export default app;

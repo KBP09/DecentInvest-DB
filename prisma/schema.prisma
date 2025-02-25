@@ -76,7 +76,7 @@ model InvestorProfile {
   profilePicture      String?
   investorName        String
   about               String
-  birthday            DateTime
+  birthday            String
   totalAmountInvested Float        @default(0)
   startupsInvestedIn  Investment[]
   userId              String       @unique @db.Uuid
