@@ -48,7 +48,7 @@ export const createStartup = async (req: Request, res: Response): Promise<any> =
         }
 
         try {
-            const { userId, ceoName, name, description, fundingGoal, companySize, otherFounder, originatedOn, youtubeLink, websiteLink, industry, problem, revenueModel, equity} = req.body;
+            const { userId, ceoName, name, description, fundingGoal, companySize, otherFounder, originatedOn, youtubeLink, websiteLink, competitiveAdv, industry, problem, revenueModel, revenue, equity } = req.body;
 
             const logoCID = await uploadToIPFS(req.file.buffer, req.file.originalname);
             const logoUrl = `https://lavender-late-trout-749.mypinata.cloud/ipfs/${logoCID}`;
@@ -64,26 +64,6 @@ export const createStartup = async (req: Request, res: Response): Promise<any> =
                 return res.status(403).json({ error: "You must be a CEO to create a startup." });
             }
 
-            const newStartup = await prisma.startup.create({
-                data: {
-                    name: name,
-                    description: description,
-                    fundingGoal: parseInt(fundingGoal),
-                    equity:equity,
-                    industry:industry,
-                    problem:problem,
-                    revenueModel:revenueModel,
-                    websiteLink: websiteLink,
-                    ceoName: ceoName,
-                    ownerId: userId,
-                    companySize: parseInt(companySize),
-                    otherFounder: otherFounder,
-                    originatedOn: originatedOn,
-                    youtubeLink: youtubeLink,
-                    logoLink: logoUrl,
-                }
-            });
-
             const metadata = {
                 name,
                 description,
@@ -93,6 +73,29 @@ export const createStartup = async (req: Request, res: Response): Promise<any> =
 
             const metadataCID = await uploadMetadataToIPFS(metadata);
             const metadataUrl = `https://lavender-late-trout-749.mypinata.cloud/ipfs/${metadataCID}`;
+
+            const newStartup = await prisma.startup.create({
+                data: {
+                    name: name,
+                    description: description,
+                    fundingGoal: parseInt(fundingGoal),
+                    equity: parseInt(equity),
+                    competitiveAdv: competitiveAdv,
+                    industry: industry,
+                    problem: problem,
+                    revenueModel: revenueModel,
+                    revenue: parseInt(revenue),
+                    websiteLink: websiteLink,
+                    ceoName: ceoName,
+                    ownerId: userId,
+                    companySize: parseInt(companySize),
+                    otherFounder: otherFounder,
+                    originatedOn: originatedOn,
+                    youtubeLink: youtubeLink,
+                    metaDataLink:metadataUrl,
+                    logoLink: logoUrl,
+                }
+            });
 
             const nft = await prisma.nFT.create({
                 data: {
@@ -169,12 +172,12 @@ export const getAllStartup = async (req: Request, res: Response): Promise<any> =
             where: {
                 isMinted: true,
             },
-            select:{
-                id:true,
-                name:true,
-                description:true,
-                logoLink:true,
-                createdAt:true,
+            select: {
+                id: true,
+                name: true,
+                description: true,
+                logoLink: true,
+                createdAt: true,
             }
         });
 
