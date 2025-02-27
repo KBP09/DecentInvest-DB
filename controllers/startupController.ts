@@ -48,7 +48,7 @@ export const createStartup = async (req: Request, res: Response): Promise<any> =
         }
 
         try {
-            const { userId, ceoName, name, description, fundingGoal, companySize, otherFounder, originatedOn, whitePaper, youtubeLink, websiteLink } = req.body;
+            const { userId, ceoName, name, description, fundingGoal, companySize, otherFounder, originatedOn, youtubeLink, websiteLink, industry, problem, revenueModel, equity} = req.body;
 
             const logoCID = await uploadToIPFS(req.file.buffer, req.file.originalname);
             const logoUrl = `https://lavender-late-trout-749.mypinata.cloud/ipfs/${logoCID}`;
@@ -69,13 +69,16 @@ export const createStartup = async (req: Request, res: Response): Promise<any> =
                     name: name,
                     description: description,
                     fundingGoal: parseInt(fundingGoal),
+                    equity:equity,
+                    industry:industry,
+                    problem:problem,
+                    revenueModel:revenueModel,
                     websiteLink: websiteLink,
                     ceoName: ceoName,
                     ownerId: userId,
                     companySize: parseInt(companySize),
                     otherFounder: otherFounder,
                     originatedOn: originatedOn,
-                    whitePaper: whitePaper,
                     youtubeLink: youtubeLink,
                     logoLink: logoUrl,
                 }
