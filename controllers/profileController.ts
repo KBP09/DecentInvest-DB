@@ -1,7 +1,12 @@
 import prisma from "../DB/db.config";
 import dotenv from 'dotenv';
+import multer from "multer";
+import { uploadToIPFS } from "./startupController";
 import { Request, Response } from 'express';
 dotenv.config();
+
+const storage = multer.memoryStorage();
+const upload = multer({ storage }).single("image");
 
 export const getProfile = async (req: Request, res: Response): Promise<any> => {
     const { userId } = req.body;
@@ -66,69 +71,84 @@ export const publicProfile = async (req: Request, res: Response): Promise<any> =
 };
 
 export const setProfile = async (req: Request, res: Response): Promise<any> => {
-    const { userId, name, about, birthday, twitter, linkedin, github } = req.body;
+    upload(req, res, async (err) => {
+        if (err) return res.status(500).json({ error: "File upload error", details: err.message })
 
-    try {
-        const user = await prisma.user.findUnique({
-            where: {
-                id: userId,
-            }
-        });
-
-        if (user?.isProfileComplete === false) {
-            if (user.role === 'STARTUP_OWNER') {
-                const ceoProfile = await prisma.cEOProfile.create({
-                    data: {
-                        user: {
-                            connect: { id: userId },
-                        },
-                        ceoName: name,
-                        about: about,
-                        birthday: birthday,
-                        twitter: twitter,
-                        linkedin: linkedin,
-                        github: github
-                    }
-                });
-
-                const update = await prisma.user.update({
-                    where: {
-                        id: userId,
-                    },
-                    data: {
-                        isProfileComplete: true
-                    }
-                });
-
-                return res.status(200).json({ ceoProfile });
-            } else if (user.role === 'INVESTOR') {
-                const investorProfile = await prisma.investorProfile.create({
-                    data: {
-                        user: {
-                            connect: { id: userId },
-                        },
-                        investorName: name,
-                        about: about,
-                        birthday: birthday,
-                    }
-                });
-                const update = await prisma.user.update({
-                    where: {
-                        id: userId,
-                    },
-                    data: {
-                        isProfileComplete: true
-                    }
-                });
-                return res.status(200).json({ investorProfile });
-            }
-
-            return res.status(400).json({ message: "something went wrong" });
+        if (!req.file) {
+            return res.status(400).json({ error: "No file uploaded" });
         }
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ error: 'Error creating profile' });
-    }
+        try {
+            const { userId, name, about, education, birthday, twitter, linkedin, github } = req.body;
+
+            const profilePicCID = await uploadToIPFS(req.file.buffer, req.file.originalname);
+
+            const profilePicture = `https://lavender-late-trout-749.mypinata.cloud/ipfs/${profilePicCID}`;
+
+            const user = await prisma.user.findUnique({
+                where: {
+                    id: userId,
+                }
+            });
+
+            if (user?.isProfileComplete === false) {
+                if (user.role === 'STARTUP_OWNER') {
+                    const ceoProfile = await prisma.cEOProfile.create({
+                        data: {
+                            user: {
+                                connect: { id: userId },
+                            },
+                            ceoName: name,
+                            about: about,
+                            education: education,
+                            profilePicture: profilePicture,
+                            birthday: birthday,
+                            twitter: twitter,
+                            linkedin: linkedin,
+                            github: github
+                        }
+                    });
+
+                    const update = await prisma.user.update({
+                        where: {
+                            id: userId,
+                        },
+                        data: {
+                            isProfileComplete: true
+                        }
+                    });
+
+                    return res.status(200).json({ ceoProfile });
+                } else if (user.role === 'INVESTOR') {
+                    const investorProfile = await prisma.investorProfile.create({
+                        data: {
+                            user: {
+                                connect: { id: userId },
+                            },
+                            investorName: name,
+                            education: education,
+                            profilePicture: profilePicture,
+                            about: about,
+                            birthday: birthday,
+                        }
+                    });
+                    const update = await prisma.user.update({
+                        where: {
+                            id: userId,
+                        },
+                        data: {
+                            isProfileComplete: true
+                        }
+                    });
+                    return res.status(200).json({ investorProfile });
+                }
+
+                return res.status(400).json({ message: "something went wrong" });
+            }
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ error: 'Error creating profile' });
+        }
+    });
 }
 
 export const profileCheck = async (req: Request, res: Response): Promise<any> => {
@@ -172,7 +192,23 @@ export const getUserRole = async (req: Request, res: Response): Promise<any> => 
             }
         });
 
-        return res.status(200).json({ role: user?.role });
+        const userProfile = await prisma.user.findUnique({
+            where: {
+                id: userId
+            },
+            include: {
+                ceoProfile: true,
+                investorProfile: true,
+                startups: true,
+            }
+        });
+        let profilePic = "";
+        if (user?.role === 'STARTUP_OWNER') {
+            profilePic = userProfile?.ceoProfile?.profilePicture || "";
+        } else {
+            profilePic = userProfile?.investorProfile?.profilePicture || "";
+        }
+        return res.status(200).json({ role: user?.role, profilepic: profilePic });
     } catch (error) {
         return res.status(500).json({ error: "something went wrong" });
     }

@@ -63,6 +63,7 @@ model CEOProfile {
   id               String  @id @default(uuid()) @db.Uuid
   profilePicture   String?
   ceoName          String
+  education        String
   about            String
   birthday         String
   totalInvestments Float   @default(0)
@@ -78,6 +79,7 @@ model InvestorProfile {
   id                  String       @id @default(uuid()) @db.Uuid
   profilePicture      String?
   investorName        String
+  education           String
   about               String
   birthday            String
   totalAmountInvested Float        @default(0)
