@@ -27,11 +27,14 @@ model Startup {
   ceoName      String
   description  String
   fundingGoal  Float
+  industry     String
+  problem      String
+  revenueModel String
+  equity       String
   websiteLink  String
   companySize  Int
   otherFounder String?
   originatedOn DateTime?
-  whitePaper   String
   youtubeLink  String
   logoLink     String       @default("")
   metaDataLink String       @default("")
