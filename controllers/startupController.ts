@@ -92,7 +92,7 @@ export const createStartup = async (req: Request, res: Response): Promise<any> =
                     otherFounder: otherFounder,
                     originatedOn: originatedOn,
                     youtubeLink: youtubeLink,
-                    metaDataLink:metadataUrl,
+                    metaDataLink: metadataUrl,
                     logoLink: logoUrl,
                 }
             });
@@ -185,5 +185,24 @@ export const getAllStartup = async (req: Request, res: Response): Promise<any> =
     } catch (error) {
         console.log(error);
         res.status(500).json({ error: "Internal Server Error" });
+    }
+}
+
+export const publishStartup = async (req: Request, res: Response): Promise<any> => {
+    const { startupId } = req.body;
+
+    try {
+        const startup = await prisma.startup.update({
+            where:{
+                id:startupId,
+            },data:{
+                isPublished:true,
+            }
+        });
+
+        res.status(200).json({message:"startup publish successfully"});
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({error: "Internal Server Error"});
     }
 }
