@@ -4,7 +4,7 @@ import axios from "axios";
 import dotenv from 'dotenv';
 import prisma from "../DB/db.config";
 import FormData from "form-data";
-import { promises } from "dns";
+import { connectPolymesh, createSecurityToken } from "./transactionService";
 
 dotenv.config();
 
@@ -193,16 +193,29 @@ export const publishStartup = async (req: Request, res: Response): Promise<any> 
 
     try {
         const startup = await prisma.startup.update({
-            where:{
-                id:startupId,
-            },data:{
-                isPublished:true,
+            where: {
+                id: startupId,
+            }, data: {
+                isPublished: true,
             }
         });
 
-        res.status(200).json({message:"startup publish successfully"});
+        res.status(200).json({ message: "startup publish successfully" });
     } catch (error) {
         console.log(error);
-        res.status(500).json({error: "Internal Server Error"});
+        res.status(500).json({ error: "Internal Server Error" });
     }
+}
+
+export const createStartupToken = async (req: Request, res: Response): Promise<any> => {
+    const { startupName, startupId, ticker } = req.body;
+    try {
+        const sdk = await connectPolymesh();
+
+    } catch (error) {
+
+    }
+}
+export const invest = async (req: Request, res: Response): Promise<any> => {
+
 }

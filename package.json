@@ -10,6 +10,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@polymathnetwork/polymesh-sdk": "^14.1.2",
     "@prisma/client": "^6.2.1",
     "axios": "^1.7.9",
     "bcrypt": "^5.1.1",

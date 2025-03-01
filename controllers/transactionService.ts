@@ -3,6 +3,8 @@ import dotenv from 'dotenv';
 import { Request, Response } from "express";
 import { USDC_ABI } from "../abis/usdcABI";
 import Web3 from "web3";
+import { Polymesh } from "@polymathnetwork/polymesh-sdk";
+
 dotenv.config();
 
 const polApiKey = process.env.POLPOSAMOY_API;
@@ -12,6 +14,15 @@ const testNetChains = [80002];
 interface ChainConfig {
     url: string;
     usdcAddress: string;
+}
+
+export const connectPolymesh= async() => {
+    const sdk = await Polymesh.connect({
+        nodeUrl: 'wss://testnet-rpc.polymesh.live',
+    });
+
+    console.log('Connected to Polymesh Testnet');
+    return sdk;
 }
 
 
@@ -393,4 +404,15 @@ export const getUserChainBalance = async (req: Request, res: Response): Promise<
     } catch (error) {
         return res.status(500).json({ error: error });
     }
+}
+
+export const createSecurityToken = async (sdk: any, name: string, ticker: string): Promise<any> => {
+    const securityToken = await sdk.assets.createAsset({
+        ticker, // Unique ticker symbol (e.g., "DINV")
+        name, // Token name (e.g., "DecentInvest Security Token")
+        isDivisible: true, // Allows fractional investments
+    });
+
+    console.log('Security Token Created:', securityToken);
+    return securityToken;
 }
