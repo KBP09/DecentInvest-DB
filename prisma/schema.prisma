@@ -22,31 +22,32 @@ model User {
 }
 
 model Startup {
-  id             String       @id @default(uuid()) @db.Uuid
-  name           String
-  ceoName        String
-  description    String
-  fundingGoal    Float
-  industry       String
-  problem        String
-  revenueModel   String
-  equity         Float
-  competitiveAdv String
-  websiteLink    String
-  companySize    Int
-  otherFounder   String?
-  originatedOn   DateTime?
-  youtubeLink    String
-  logoLink       String       @default("")
-  metaDataLink   String       @default("")
-  createdAt      DateTime     @default(now())
-  ownerId        String       @db.Uuid
-  owner          User         @relation("StartupOwner", fields: [ownerId], references: [id])
-  investments    Investment[]
-  NFT            NFT[]
-  revenue        Int
-  isMinted       Boolean      @default(false)
-  isPublished    Boolean      @default(false)
+  id                   String       @id @default(uuid()) @db.Uuid
+  name                 String
+  ceoName              String
+  description          String
+  fundingGoal          Float
+  industry             String
+  problem              String
+  revenueModel         String
+  equity               Float
+  competitiveAdv       String
+  websiteLink          String
+  companySize          Int
+  otherFounder         String?
+  originatedOn         DateTime?
+  youtubeLink          String
+  logoLink             String       @default("")
+  metaDataLink         String       @default("")
+  createdAt            DateTime     @default(now())
+  ownerId              String       @db.Uuid
+  owner                User         @relation("StartupOwner", fields: [ownerId], references: [id])
+  investments          Investment[]
+  NFT                  NFT[]
+  revenue              Int
+  isMinted             Boolean      @default(false)
+  isPublished          Boolean      @default(false)
+  securityTokenAddress String       @default("")
 }
 
 model NFT {
