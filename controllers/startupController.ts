@@ -211,9 +211,20 @@ export const createStartupToken = async (req: Request, res: Response): Promise<a
     const { startupName, startupId, ticker } = req.body;
     try {
         const sdk = await connectPolymesh();
+        const securityToken = await createSecurityToken(sdk, startupName, ticker);
 
+        const startup = await prisma.startup.update({
+            where: {
+                id: startupId,
+            }, data: {
+                securityTokenAddress: securityToken.assetId,
+            }
+        })
+
+        res.status(200).json({ securityToken: securityToken });
     } catch (error) {
-
+        console.log(error);
+        res.status(500).json({ error: "Internal server error" });
     }
 }
 export const invest = async (req: Request, res: Response): Promise<any> => {
