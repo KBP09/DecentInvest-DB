@@ -16,7 +16,7 @@ interface ChainConfig {
     usdcAddress: string;
 }
 
-export const connectPolymesh= async() => {
+export const connectPolymesh = async () => {
     const sdk = await Polymesh.connect({
         nodeUrl: 'wss://testnet-rpc.polymesh.live',
     });
@@ -28,10 +28,12 @@ export const connectPolymesh= async() => {
 
 const getChainConfig = (address: string, action: string): Record<number, ChainConfig> => ({
     80002: {
-        url: `https://api-amoy.polygonscan.com/api?module=account&action=${action}&contractaddress=0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582&address=${address}&apikey=${polApiKey}`,
+        url: `https://api-amoy.polygonscan.com/api?module=account&action=${action}&address=${address}${action === 'tokentx' ? '&contractaddress=0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582' : ''}&apikey=${polApiKey}`,
         usdcAddress: '0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582',
-    } //Polygon-amoy
+    } // Polygon-amoy
 });
+
+
 
 const providerListInfuria = {
     "POL": "https://polygon-mainnet.infura.io/v3/",
@@ -145,6 +147,7 @@ export const transaction = async (req: Request, res: Response): Promise<any> => 
                 amount: amount,
                 currency: 'USDC',
                 transactionHash: signedTx.transactionHash,
+                totalTxnCost:parseFloat(transactionCost),
                 confirmed: false,
                 chainId: chainId,
                 nonce: Number(tx.nonce)
@@ -230,7 +233,7 @@ export const updateTransaction = async (req: Request, res: Response): Promise<an
     try {
         for (let i = 0; i < testNetChains.length; i++) {
             const chainId = testNetChains[i];
-            const actions = ["tokentx", "txlist"];
+            const actions = ["tokentx", "txlist", "txlistinternal"];
 
             for (const action of actions) {
                 const chainConfigs = getChainConfig(address, action);
@@ -254,7 +257,6 @@ export const updateTransaction = async (req: Request, res: Response): Promise<an
 
                 if (!data?.result?.length) {
                     console.warn("No transaction data found.");
-                    return res.status(200).json({ message: "Transaction updated successfully" });
                 }
 
 
@@ -264,13 +266,13 @@ export const updateTransaction = async (req: Request, res: Response): Promise<an
                     toAddress: txn.to,
                     amount: parseFloat(txn.value) / Math.pow(10, parseInt(action === "tokentx" ? txn.tokenDecimal : "18")),
                     currency: action === "tokentx" ? txn.tokenName : "POL",
-                    totalTxnCost:
+                    totalTxnCost: action === "tokentx" ?
                         (parseFloat(txn.gasUsed) * parseFloat(txn.gasPrice)) /
-                        Math.pow(10, 18),
+                        Math.pow(10, 18) : 0,
                     chainId: chainId.toString(),
                     timeStamp: new Date(parseInt(txn.timeStamp) * 1000),
                     confirmed: parseInt(txn.confirmations) > 0,
-                    nonce: parseInt(txn.nonce),
+                    nonce: action === "tokentx" ? parseInt(txn.nonce) : 0,
                     type: txn.from === address ? "out" : "in",
                 }));
 
