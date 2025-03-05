@@ -410,9 +410,9 @@ export const getUserChainBalance = async (req: Request, res: Response): Promise<
 
 export const createSecurityToken = async (sdk: any, name: string, ticker: string): Promise<any> => {
     const securityToken = await sdk.assets.createAsset({
-        ticker, // Unique ticker symbol (e.g., "DINV")
-        name, // Token name (e.g., "DecentInvest Security Token")
-        isDivisible: true, // Allows fractional investments
+        ticker, 
+        name, 
+        isDivisible: true, 
     });
 
     console.log('Security Token Created:', securityToken);
