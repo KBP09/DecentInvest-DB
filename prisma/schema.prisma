@@ -22,7 +22,7 @@ model User {
 }
 
 model Startup {
-  id                   String       @id @default(uuid()) @db.Uuid
+  id                   String         @id @default(uuid()) @db.Uuid
   name                 String
   ceoName              String
   description          String
@@ -37,17 +37,18 @@ model Startup {
   otherFounder         String?
   originatedOn         DateTime?
   youtubeLink          String
-  logoLink             String       @default("")
-  metaDataLink         String       @default("")
-  createdAt            DateTime     @default(now())
-  ownerId              String       @db.Uuid
-  owner                User         @relation("StartupOwner", fields: [ownerId], references: [id])
+  logoLink             String         @default("")
+  metaDataLink         String         @default("")
+  createdAt            DateTime       @default(now())
+  ownerId              String         @db.Uuid
+  owner                User           @relation("StartupOwner", fields: [ownerId], references: [id])
   investments          Investment[]
   NFT                  NFT[]
   revenue              Int
-  isMinted             Boolean      @default(false)
-  isPublished          Boolean      @default(false)
-  securityTokenAddress String       @default("")
+  isMinted             Boolean        @default(false)
+  isPublished          Boolean        @default(false)
+  securityTokenAddress String         @default("")
+  SecurityToken        SecurityToken?
 }
 
 model NFT {
@@ -61,6 +62,19 @@ model NFT {
   txHash      String?
   createdAt   DateTime @default(now())
   status      String   @default("pending")
+}
+
+model SecurityToken {
+  id              String   @id @default(uuid()) @db.Uuid
+  startupId       String   @unique @db.Uuid
+  startup         Startup  @relation(fields: [startupId], references: [id])
+  assetId         String   @unique
+  symbol          String   @unique
+  tokenName       String
+  totalSupply     Float
+  ownerWallet     String   
+  investorWallets String[] @default([])
+  createdAt       DateTime @default(now())
 }
 
 model CEOProfile {

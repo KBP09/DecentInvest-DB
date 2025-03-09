@@ -189,7 +189,7 @@ export const getAllStartup = async (req: Request, res: Response): Promise<any> =
 }
 
 export const publishStartup = async (req: Request, res: Response): Promise<any> => {
-    const { startupId } = req.body;
+    const { startupId,securityToken, } = req.body;
 
     try {
         const startup = await prisma.startup.update({
@@ -221,12 +221,17 @@ export const createStartupToken = async (req: Request, res: Response): Promise<a
             }
         })
 
-        res.status(200).json({ securityToken: securityToken });
+        return res.status(200).json({ securityToken: securityToken });
     } catch (error) {
         console.log(error);
         res.status(500).json({ error: "Internal server error" });
     }
 }
+
+export const updateSecurityToken = async(req:Request,res:Response): Promise<any> => {
+
+}
+
 export const invest = async (req: Request, res: Response): Promise<any> => {
 
 }
