@@ -5,6 +5,7 @@ import { transaction, updateTransaction, getAllTransactions, getUserChainBalance
 import { authenticateToken } from '../controllers/authController';
 import { getAllTokens } from '../controllers/walletService';
 import { createStartup, getStartup, updateNFT, getAllStartup, publishStartup } from '../controllers/startupController';
+import { storeSecurityToken } from '../controllers/STcontroller';
 import cors from 'cors';
 
 const app = express();
@@ -33,5 +34,6 @@ app.use("/startup/:startupId", getStartup);
 app.use("/updateNFT", authenticateToken, updateNFT);
 app.use("/getAllStartup",getAllStartup);
 app.use("/publish",publishStartup);
+app.use("/storeSecurityToken",storeSecurityToken);
 
 export default app;
