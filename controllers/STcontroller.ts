@@ -5,7 +5,8 @@ import prisma from "../DB/db.config";
 dotenv.config();
 
 export const storeSecurityToken = async (req: Request, res: Response): Promise<any> => {
-    const { startupId, ticker, tokenName, assetId, totalSupply, ownerDID, ownerPortfolioID } = req.body;
+    const { startupId, ticker, tokenName, assetId, totalSupply, ownerWallet } = req.body;
+    
     try {
         const token = await prisma.securityToken.create({
             data: {
@@ -13,13 +14,16 @@ export const storeSecurityToken = async (req: Request, res: Response): Promise<a
                 symbol: ticker,
                 tokenName: tokenName,
                 totalSupply: totalSupply,
-                ownerWallet: ownerDID,
+                ownerWallet: ownerWallet,
                 assetId: assetId,
             }
         });
 
+        console.log("Stored Security Token:", token); 
         return res.status(200).json({ securityToken: token });
-    } catch (error) {
-        return res.status(500).json({ error: "something went wrong" });
+
+    } catch (error:any) {
+        console.error("Database Error:", error); 
+        return res.status(500).json({ error: error.message || "Something went wrong" });
     }
-}
+};
