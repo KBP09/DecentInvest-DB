@@ -4,7 +4,6 @@ import axios from "axios";
 import dotenv from 'dotenv';
 import prisma from "../DB/db.config";
 import FormData from "form-data";
-import { connectPolymesh, createSecurityToken } from "./transactionService";
 
 dotenv.config();
 
@@ -207,26 +206,26 @@ export const publishStartup = async (req: Request, res: Response): Promise<any> 
     }
 }
 
-export const createStartupToken = async (req: Request, res: Response): Promise<any> => {
-    const { startupName, startupId, ticker } = req.body;
-    try {
-        const sdk = await connectPolymesh();
-        const securityToken = await createSecurityToken(sdk, startupName, ticker);
+// export const createStartupToken = async (req: Request, res: Response): Promise<any> => {
+//     const { startupName, startupId, ticker } = req.body;
+//     try {
+//         const sdk = await connectPolymesh();
+//         const securityToken = await createSecurityToken(sdk, startupName, ticker);
 
-        const startup = await prisma.startup.update({
-            where: {
-                id: startupId,
-            }, data: {
-                securityTokenAddress: securityToken.assetId,
-            }
-        })
+//         const startup = await prisma.startup.update({
+//             where: {
+//                 id: startupId,
+//             }, data: {
+//                 securityTokenAddress: securityToken.assetId,
+//             }
+//         })
 
-        return res.status(200).json({ securityToken: securityToken });
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({ error: "Internal server error" });
-    }
-}
+//         return res.status(200).json({ securityToken: securityToken });
+//     } catch (error) {
+//         console.log(error);
+//         res.status(500).json({ error: "Internal server error" });
+//     }
+// }
 
 export const updateSecurityToken = async(req:Request,res:Response): Promise<any> => {
 

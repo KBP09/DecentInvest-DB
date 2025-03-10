@@ -16,15 +16,6 @@ interface ChainConfig {
     usdcAddress: string;
 }
 
-export const connectPolymesh = async () => {
-    const sdk = await Polymesh.connect({
-        nodeUrl: 'wss://testnet-rpc.polymesh.live',
-    });
-
-    console.log('Connected to Polymesh Testnet');
-    return sdk;
-}
-
 
 const getChainConfig = (address: string, action: string): Record<number, ChainConfig> => ({
     80002: {
