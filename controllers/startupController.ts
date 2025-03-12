@@ -188,7 +188,7 @@ export const getAllStartup = async (req: Request, res: Response): Promise<any> =
 }
 
 export const publishStartup = async (req: Request, res: Response): Promise<any> => {
-    const { startupId,securityToken, } = req.body;
+    const { startupId, contractId, } = req.body;
 
     try {
         const startup = await prisma.startup.update({
@@ -196,6 +196,8 @@ export const publishStartup = async (req: Request, res: Response): Promise<any> 
                 id: startupId,
             }, data: {
                 isPublished: true,
+                isMinted: true,
+                contractId: contractId,
             }
         });
 
@@ -206,28 +208,7 @@ export const publishStartup = async (req: Request, res: Response): Promise<any> 
     }
 }
 
-// export const createStartupToken = async (req: Request, res: Response): Promise<any> => {
-//     const { startupName, startupId, ticker } = req.body;
-//     try {
-//         const sdk = await connectPolymesh();
-//         const securityToken = await createSecurityToken(sdk, startupName, ticker);
-
-//         const startup = await prisma.startup.update({
-//             where: {
-//                 id: startupId,
-//             }, data: {
-//                 securityTokenAddress: securityToken.assetId,
-//             }
-//         })
-
-//         return res.status(200).json({ securityToken: securityToken });
-//     } catch (error) {
-//         console.log(error);
-//         res.status(500).json({ error: "Internal server error" });
-//     }
-// }
-
-export const updateSecurityToken = async(req:Request,res:Response): Promise<any> => {
+export const updateSecurityToken = async (req: Request, res: Response): Promise<any> => {
 
 }
 
