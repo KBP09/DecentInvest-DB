@@ -9,7 +9,8 @@ dotenv.config();
 
 const polApiKey = process.env.POLPOSAMOY_API;
 const infuraApiKey = process.env.INFURA_KEY;
-const testNetChains = [80002];
+const ethApiKey = process.env.ETHSEPOLIA_API;
+const testNetChains = [11155111];
 
 interface ChainConfig {
     url: string;
@@ -18,10 +19,14 @@ interface ChainConfig {
 
 
 const getChainConfig = (address: string, action: string): Record<number, ChainConfig> => ({
-    80002: {
-        url: `https://api-amoy.polygonscan.com/api?module=account&action=${action}&address=${address}${action === 'tokentx' ? '&contractaddress=0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582' : ''}&apikey=${polApiKey}`,
-        usdcAddress: '0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582',
-    } // Polygon-amoy
+    // 80002: {
+    //     url: `https://api-amoy.polygonscan.com/api?module=account&action=${action}&address=${address}${action === 'tokentx' ? '&contractaddress=0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582' : ''}&apikey=${polApiKey}`,
+    //     usdcAddress: '0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582',
+    // }, // Polygon-amoy
+    11155111: {
+        url: `https://api-sepolia.etherscan.io/api?module=account&action=${action}&address=${address}${action === 'tokentx' ? '&contractaddress=0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238' : ''}&apikey=${ethApiKey}`,
+        usdcAddress: '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238'
+    }
 });
 
 
@@ -37,7 +42,7 @@ export const transaction = async (req: Request, res: Response): Promise<any> => 
     const { amount, fromAddress, toAddress, currency, chainId, privateKey, contractAddress } = req.body;
 
     try {
-        const url = "https://polygon-amoy.infura.io/v3/a5d7e9b31d1247538827bbc14525f0a5"
+        const url = "https://sepolia.infura.io/v3/a5d7e9b31d1247538827bbc14525f0a5"
         const web3 = new Web3(url);
         const fromWallet = await prisma.address.findFirst({
             where: {
@@ -138,7 +143,7 @@ export const transaction = async (req: Request, res: Response): Promise<any> => 
                 amount: amount,
                 currency: 'USDC',
                 transactionHash: signedTx.transactionHash,
-                totalTxnCost:parseFloat(transactionCost),
+                totalTxnCost: parseFloat(transactionCost),
                 confirmed: false,
                 chainId: chainId,
                 nonce: Number(tx.nonce)
@@ -256,7 +261,7 @@ export const updateTransaction = async (req: Request, res: Response): Promise<an
                     fromAddress: txn.from,
                     toAddress: txn.to,
                     amount: parseFloat(txn.value) / Math.pow(10, parseInt(action === "tokentx" ? txn.tokenDecimal : "18")),
-                    currency: action === "tokentx" ? txn.tokenName : "POL",
+                    currency: action === "tokentx" ? txn.tokenName : "SEPOLIA",
                     totalTxnCost: action === "tokentx" ?
                         (parseFloat(txn.gasUsed) * parseFloat(txn.gasPrice)) /
                         Math.pow(10, 18) : 0,
@@ -401,9 +406,9 @@ export const getUserChainBalance = async (req: Request, res: Response): Promise<
 
 export const createSecurityToken = async (sdk: any, name: string, ticker: string): Promise<any> => {
     const securityToken = await sdk.assets.createAsset({
-        ticker, 
-        name, 
-        isDivisible: true, 
+        ticker,
+        name,
+        isDivisible: true,
     });
 
     console.log('Security Token Created:', securityToken);
