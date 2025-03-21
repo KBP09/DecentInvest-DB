@@ -108,12 +108,14 @@ model InvestorProfile {
 }
 
 model Investment {
-  id         String          @id @default(uuid()) @db.Uuid
-  amount     Float
-  startupId  String          @db.Uuid
-  investorId String          @db.Uuid
-  startup    Startup         @relation(fields: [startupId], references: [id])
-  investor   InvestorProfile @relation(fields: [investorId], references: [id])
+  id          String          @id @default(uuid()) @db.Uuid
+  amount      Float
+  startupId   String          @db.Uuid
+  investorId  String          @db.Uuid
+  startup     Startup         @relation(fields: [startupId], references: [id])
+  investor    InvestorProfile @relation(fields: [investorId], references: [id])
+  status      String          @default("Pending")
+  equityToken Float           @default(0)
 }
 
 enum Role {

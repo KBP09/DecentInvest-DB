@@ -19,14 +19,14 @@ interface ChainConfig {
 
 
 const getChainConfig = (address: string, action: string): Record<number, ChainConfig> => ({
-    // 80002: {
-    //     url: `https://api-amoy.polygonscan.com/api?module=account&action=${action}&address=${address}${action === 'tokentx' ? '&contractaddress=0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582' : ''}&apikey=${polApiKey}`,
-    //     usdcAddress: '0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582',
-    // }, // Polygon-amoy
-    11155111: {
-        url: `https://api-sepolia.etherscan.io/api?module=account&action=${action}&address=${address}${action === 'tokentx' ? '&contractaddress=0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238' : ''}&apikey=${ethApiKey}`,
-        usdcAddress: '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238'
-    }
+    80002: {
+        url: `https://api-amoy.polygonscan.com/api?module=account&action=${action}&address=${address}${action === 'tokentx' ? '&contractaddress=0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582' : ''}&apikey=${polApiKey}`,
+        usdcAddress: '0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582',
+    }, // Polygon-amoy
+    // 11155111: {
+    //     url: `https://api-sepolia.etherscan.io/api?module=account&action=${action}&address=${address}${action === 'tokentx' ? '&contractaddress=0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238' : ''}&apikey=${ethApiKey}`,
+    //     usdcAddress: '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238'
+    // }
 });
 
 
