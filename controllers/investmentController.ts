@@ -56,3 +56,22 @@ export const investments = async (req: Request, res: Response): Promise<any> => 
         return res.status(500).json({ error: error });
     }
 }
+
+export const updateInvestment = async (req: Request, res: Response): Promise<any> => {
+    const { id, status } = req.body;
+    try {
+        const updatedInvestment = await prisma.investment.update({
+            where: {
+                id: id,
+            },
+            data: {
+                status: status,
+            }
+        });
+
+        return res.status(200).json({ success: true, updatedInvestment });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ error: "Internal Server Error" });
+    }
+}
