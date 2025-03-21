@@ -6,8 +6,9 @@ import { authenticateToken } from '../controllers/authController';
 import { getAllTokens, getUSDCBalance } from '../controllers/walletService';
 import { createStartup, getStartup, updateNFT, getAllStartup, publishStartup } from '../controllers/startupController';
 import { storeSecurityToken } from '../controllers/STcontroller';
+import { invest, updateInvestment, investments } from '../controllers/investmentController';
 import cors from 'cors';
- 
+
 const app = express();
 app.use(
     cors({
@@ -16,9 +17,9 @@ app.use(
         credentials: true,
     })
 );
- 
+
 app.use(express.json());
- 
+
 app.use("/auth", authRoute);
 app.use("/setProfile", authenticateToken, setProfile);
 app.use("/profileCheck", profileCheck);
@@ -34,5 +35,8 @@ app.use("/updateNFT", authenticateToken, updateNFT);
 app.use("/getAllStartup", getAllStartup);
 app.use("/publish", publishStartup);
 app.use("/storeSecurityToken", storeSecurityToken);
-app.use("/getBalance",getUSDCBalance);
+app.use("/getBalance", getUSDCBalance);
+app.use("/invest", authenticateToken, invest);
+app.use("/updateInvestment", authenticateToken, updateInvestment);
+app.use("/getInvestments", authenticateToken, investments);
 export default app;
