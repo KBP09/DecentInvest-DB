@@ -108,3 +108,22 @@ export const addPolymeshWallet = async (req: Request, res: Response): Promise<an
         return res.status(500).json({ error: "Internal Server Error" });
     }
 }
+
+export const startupInvestments = async (req: Request, res: Response): Promise<any> => {
+    const { startupId } = req.body;
+    try {
+        const investments = await prisma.investment.findMany({
+            where: {
+                startupId: startupId,
+            }
+        });
+
+        const totalInvested = investments.reduce((sum, inv) => sum + inv.amount, 0);
+        const totalInvestors = investments.length;
+
+        return res.status(200).json({ totalInvested: totalInvested, totalInvestors: totalInvestors });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+}
