@@ -105,6 +105,7 @@ model InvestorProfile {
   startupsInvestedIn  Investment[]
   userId              String       @unique @db.Uuid
   user                User         @relation(fields: [userId], references: [id])
+  polymeshWallet      String?      @unique
 }
 
 model Investment {

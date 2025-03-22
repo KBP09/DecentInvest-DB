@@ -39,4 +39,5 @@ app.use("/getBalance", getUSDCBalance);
 app.use("/invest", authenticateToken, invest);
 app.use("/updateInvestment", authenticateToken, updateInvestment);
 app.use("/getInvestments", authenticateToken, investments);
+
 export default app;

@@ -21,6 +21,10 @@ export const invest = async (req: Request, res: Response): Promise<any> => {
             return res.status(404).json({ error: "Investor or Startup not found" });
         }
 
+        if (!investor.polymeshWallet) {
+            return res.status(400).json({ error: "Polymesh wallet not linked. Please connect your wallet before investing." });
+        }
+
         const investment = await prisma.investment.create({
             data: {
                 investorId: investorId,
@@ -60,6 +64,11 @@ export const investments = async (req: Request, res: Response): Promise<any> => 
 export const updateInvestment = async (req: Request, res: Response): Promise<any> => {
     const { id, status } = req.body;
     try {
+
+        if (!["Pending", "Complete", "Refunded"].includes(status)) {
+            return res.status(400).json({ error: "Invalid status" });
+        }
+
         const updatedInvestment = await prisma.investment.update({
             where: {
                 id: id,
@@ -72,6 +81,30 @@ export const updateInvestment = async (req: Request, res: Response): Promise<any
         return res.status(200).json({ success: true, updatedInvestment });
     } catch (error) {
         console.log(error);
+        return res.status(500).json({ error: "Internal Server Error" });
+    }
+}
+
+export const addPolymeshWallet = async (req: Request, res: Response): Promise<any> => {
+    const { id, polymeshWallet } = req.body;
+    try {
+
+        const existingWallet = await prisma.investorProfile.findUnique({
+            where: { polymeshWallet },
+        });
+
+        if (existingWallet) {
+            return res.status(400).json({ error: "Wallet already linked to another investor" });
+        }
+
+        const updatedInvestor = await prisma.investorProfile.update({
+            where: { id: id },
+            data: { polymeshWallet },
+        });
+
+        return res.status(200).json({ success: true, investor: updatedInvestor });
+    } catch (error) {
+        console.error(error);
         return res.status(500).json({ error: "Internal Server Error" });
     }
 }
