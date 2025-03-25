@@ -3,11 +3,12 @@ import dotenv from 'dotenv';
 import { Request, Response } from "express";
 
 export const invest = async (req: Request, res: Response): Promise<any> => {
-    const { investorId, startupId, amount, equityTokens } = req.body;
+    const { investorId, userId, startupId, amount, equityTokens, txHash } = req.body;
     try {
         const investor = await prisma.investorProfile.findUnique({
             where: {
                 id: investorId,
+                userId:userId,
             }
         });
 
@@ -21,9 +22,9 @@ export const invest = async (req: Request, res: Response): Promise<any> => {
             return res.status(404).json({ error: "Investor or Startup not found" });
         }
 
-        if (!investor.polymeshWallet) {
-            return res.status(400).json({ error: "Polymesh wallet not linked. Please connect your wallet before investing." });
-        }
+        // if (!investor.polymeshWallet) {
+        //     return res.status(400).json({ error: "Polymesh wallet not linked. Please connect your wallet before investing." });
+        // }
 
         const investment = await prisma.investment.create({
             data: {
@@ -32,6 +33,7 @@ export const invest = async (req: Request, res: Response): Promise<any> => {
                 amount: amount,
                 equityToken: equityTokens,
                 status: "Pending",
+                txHash: txHash
             }
         });
 
