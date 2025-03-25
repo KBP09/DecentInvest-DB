@@ -117,6 +117,7 @@ model Investment {
   investor    InvestorProfile @relation(fields: [investorId], references: [id])
   status      String          @default("Pending")
   equityToken Float           @default(0)
+  txHash      String          @default("")
 }
 
 enum Role {
