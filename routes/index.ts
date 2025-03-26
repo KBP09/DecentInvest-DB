@@ -42,4 +42,5 @@ app.use("/getInvestments", authenticateToken, investments);
 app.use("/addPolymeshWallet", authenticateToken, addPolymeshWallet);
 app.use("/startupInvestments", authenticateToken, startupInvestments);
 app.use("/calculateTokens", calculateTokens);
+
 export default app;

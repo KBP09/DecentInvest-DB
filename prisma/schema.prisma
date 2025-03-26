@@ -49,6 +49,7 @@ model Startup {
   isPublished          Boolean        @default(false)
   securityTokenAddress String         @default("")
   contractId           String         @default("")
+  amountRaised         Float          @default(0)
   SecurityToken        SecurityToken?
 }
 
