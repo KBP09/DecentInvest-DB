@@ -164,7 +164,7 @@ export const investmentData = async (req: Request, res: Response): Promise<any> 
 }
 
 export const claimTokens = async (req: Request, res: Response): Promise<any> => {
-    const { investorId } = req.body;
+    const { investorId, startupId, investmentId } = req.body;
     try {
         const investor = await prisma.investorProfile.findUnique({
             where: {
@@ -184,9 +184,18 @@ export const claimTokens = async (req: Request, res: Response): Promise<any> => 
             select: { startupId: true, amount: true, status: true },
         });
 
-        return res.status(200).json({distributions: distributions});
+        await prisma.investment.update({
+            where: {
+                id: investmentId,
+                investorId: investorId,
+                startupId: startupId,
+            },
+            data: { claimed: true },
+        });
+        
+        return res.status(200).json({ distributions: distributions });
     } catch (error) {
         console.log(error);
-        return res.status(500).json({error:"Internal Server Error"});
+        return res.status(500).json({ error: "Internal Server Error" });
     }
 }
