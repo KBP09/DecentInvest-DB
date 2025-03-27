@@ -8,7 +8,7 @@ export const invest = async (req: Request, res: Response): Promise<any> => {
         const investor = await prisma.investorProfile.findUnique({
             where: {
                 id: investorId,
-                userId:userId,
+                userId: userId,
             }
         });
 
@@ -22,12 +22,12 @@ export const invest = async (req: Request, res: Response): Promise<any> => {
             return res.status(404).json({ error: "Investor or Startup not found" });
         }
 
-        const totalInvestment = investor.totalAmountInvested+amount;
+        const totalInvestment = investor.totalAmountInvested + amount;
         const updated = await prisma.investorProfile.update({
-            where:{
-                id:investorId,
-                userId:userId,
-            },data:{
+            where: {
+                id: investorId,
+                userId: userId,
+            }, data: {
                 totalAmountInvested: totalInvestment
             }
         });
@@ -137,5 +137,29 @@ export const startupInvestments = async (req: Request, res: Response): Promise<a
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: "Internal Server Error" });
+    }
+}
+
+export const investmentData = async (req: Request, res: Response): Promise<any> => {
+    const { startupId } = req.body;
+    try{
+        const investors = await prisma.investment.findMany({
+            where: {
+                startupId:startupId
+            },
+            select:{
+                investor: {
+                    select: {
+                        polymeshWallet:true,
+                    }
+                },
+                amount: true,
+            }
+        });
+
+        return res.status(200).json({investors: investors});
+    }catch(error){
+        console.log(error);
+        return res.status(500).json({error: "Internal Server Error"});
     }
 }
