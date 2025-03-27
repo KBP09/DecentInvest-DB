@@ -141,24 +141,52 @@ export const startupInvestments = async (req: Request, res: Response): Promise<a
 
 export const investmentData = async (req: Request, res: Response): Promise<any> => {
     const { startupId } = req.body;
-    try{
+    try {
         const investors = await prisma.investment.findMany({
             where: {
-                startupId:startupId
+                startupId: startupId
             },
-            select:{
+            select: {
                 investor: {
                     select: {
-                        polymeshWallet:true,
+                        polymeshWallet: true,
                     }
                 },
                 amount: true,
             }
         });
 
-        return res.status(200).json({investors: investors});
-    }catch(error){
+        return res.status(200).json({ investors: investors });
+    } catch (error) {
         console.log(error);
-        return res.status(500).json({error: "Internal Server Error"});
+        return res.status(500).json({ error: "Internal Server Error" });
+    }
+}
+
+export const claimTokens = async (req: Request, res: Response): Promise<any> => {
+    const { investorId } = req.body;
+    try {
+        const investor = await prisma.investorProfile.findUnique({
+            where: {
+                id: investorId
+            },
+            select: {
+                polymeshWallet: true
+            },
+        });
+
+        if (!investor || !investor.polymeshWallet) {
+            return res.status(404).json({ error: "Investor wallet not found" });
+        }
+
+        const distributions = await prisma.investment.findMany({
+            where: { investorId },
+            select: { startupId: true, amount: true, status: true },
+        });
+
+        return res.status(200).json({distributions: distributions});
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({error:"Internal Server Error"});
     }
 }
