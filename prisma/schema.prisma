@@ -119,6 +119,7 @@ model Investment {
   status      String          @default("Pending")
   equityToken Float           @default(0)
   txHash      String          @default("")
+  claimed     Boolean         @default(false)
 }
 
 enum Role {
