@@ -207,11 +207,3 @@ export const publishStartup = async (req: Request, res: Response): Promise<any> 
         res.status(500).json({ error: "Internal Server Error" });
     }
 }
-
-export const updateSecurityToken = async (req: Request, res: Response): Promise<any> => {
-
-}
-
-export const invest = async (req: Request, res: Response): Promise<any> => {
-
-}

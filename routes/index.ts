@@ -6,7 +6,7 @@ import { authenticateToken } from '../controllers/authController';
 import { getAllTokens, getUSDCBalance } from '../controllers/walletService';
 import { createStartup, getStartup, updateNFT, getAllStartup, publishStartup } from '../controllers/startupController';
 import { storeSecurityToken, calculateTokens } from '../controllers/STcontroller';
-import { invest, updateInvestment, investments, addPolymeshWallet, startupInvestments } from '../controllers/investmentController';
+import { invest, updateInvestment, investments, addPolymeshWallet, startupInvestments, investmentData } from '../controllers/investmentController';
 import cors from 'cors';
 
 const app = express();
@@ -42,5 +42,6 @@ app.use("/getInvestments", authenticateToken, investments);
 app.use("/addPolymeshWallet", authenticateToken, addPolymeshWallet);
 app.use("/startupInvestments", authenticateToken, startupInvestments);
 app.use("/calculateTokens", calculateTokens);
+app.use("/investmentData",authenticateToken,investmentData);
 
 export default app;

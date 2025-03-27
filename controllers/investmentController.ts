@@ -1,5 +1,4 @@
 import prisma from "../DB/db.config";
-import dotenv from 'dotenv';
 import { Request, Response } from "express";
 
 export const invest = async (req: Request, res: Response): Promise<any> => {
