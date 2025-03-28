@@ -18,7 +18,15 @@ export const getProfile = async (req: Request, res: Response): Promise<any> => {
             },
             include: {
                 ceoProfile: true,
-                investorProfile: true,
+                investorProfile: {
+                    include: {
+                        startupsInvestedIn: {
+                            include: {
+                                startup: true, // Assuming Investment model has a relation to Startup
+                            }
+                        }
+                    }
+                },
                 startups: true,
             }
         });
@@ -35,6 +43,7 @@ export const getProfile = async (req: Request, res: Response): Promise<any> => {
         }
         else if (user.role === "INVESTOR" && user.investorProfile) {
             profile = user.investorProfile;
+            startupDetails = user.investorProfile.startupsInvestedIn.map((investment) => investment.startup);
         }
 
         if (!profile) {
