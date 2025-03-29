@@ -6,34 +6,34 @@ import dotenv from 'dotenv'
 import Web3 from "web3";
 import { CurrencyType } from "@prisma/client";
 import { Request, Response } from "express";
- 
+
 dotenv.config();
- 
+
 const sha256Hash = (data: string): string => {
     return crypto.createHash('sha256').update(data).digest('hex');
 }
- 
+
 interface CreateWalletResponse {
     walletId: string;
     address: string;
     privateKey: string;
     addresses: { chainId: string; balance: number; currency: string }[];
 }
- 
+
 export const createWallet = async (email: string, password: string): Promise<CreateWalletResponse> => {
     const walletMnemonic = ethers.Wallet.createRandom().mnemonic?.phrase;
     console.log(walletMnemonic);
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
- 
+
     if (walletMnemonic) {
         const hashedMnemonic = sha256Hash(walletMnemonic);
- 
+
         const wallet = ethers.Wallet.fromPhrase(walletMnemonic);
- 
+
         const tokenDetails = await prisma.tokenDetails.findMany({
         });
- 
+
         const newWallet = await prisma.wallet.create({
             data: {
                 email: email,
@@ -50,10 +50,10 @@ export const createWallet = async (email: string, password: string): Promise<Cre
                 account: true,
             },
         });
- 
+
         const accountId = newWallet.account[0].id;
- 
- 
+
+
         // Create addresses for all supported tokens with a default balance of 0
         const addressPromises = tokenDetails.map(async (token) => {
             const isNativeToken = token.tokenAddress === "0x0000000000000000000000000000000000000000";
@@ -70,9 +70,9 @@ export const createWallet = async (email: string, password: string): Promise<Cre
                 },
             });
         });
- 
+
         await Promise.all(addressPromises);
- 
+
         const accountsWithAddresses = await prisma.account.findMany({
             where: { walletId: newWallet.id },
             include: {
@@ -86,9 +86,9 @@ export const createWallet = async (email: string, password: string): Promise<Cre
                 },
             },
         });
- 
+
         const accounts = accountsWithAddresses.flatMap(account => account.addresses);
- 
+
         return {
             walletId: newWallet.id,
             address: wallet.address,
@@ -99,7 +99,7 @@ export const createWallet = async (email: string, password: string): Promise<Cre
         throw new Error("Failed to generate wallet mnemonic.");
     }
 };
- 
+
 export const getAllTokens = async (req: Request, res: Response): Promise<any> => {
     const { address } = req.body;
     try {
@@ -108,16 +108,16 @@ export const getAllTokens = async (req: Request, res: Response): Promise<any> =>
                 address: address,
             }
         })
- 
+
         return res.status(200).json({ addresses });
     } catch (error) {
         console.log(error);
         return res.status(500).json({ error: "An error occurred during getting the token" });
     }
 }
- 
+
 export const getUSDCBalance = async (req: Request, res: Response): Promise<any> => {
-    const { address, tokenAddress} = req.body;
+    const { address, tokenAddress } = req.body;
     try {
         const addresses = await prisma.address.findFirst({
             where: {
@@ -129,6 +129,24 @@ export const getUSDCBalance = async (req: Request, res: Response): Promise<any> 
         return res.status(200).json({ balance });
     }
     catch (error) {
+        console.log(error);
+        return res.status(500).json({ error: "An error occurred during getting the token" });
+    }
+}
+
+export const getNativeBalance = async (req: Request, res: Response): Promise<any> => {
+    const { address, chainId } = req.body;
+    try {
+        const addresses = await prisma.address.findFirst({
+            where: {
+                address: address,
+                chainId: chainId,
+            }
+        });
+
+        const balance = addresses?.balance;
+        return res.status(200).json({ balance });
+    } catch (error) {
         console.log(error);
         return res.status(500).json({ error: "An error occurred during getting the token" });
     }
