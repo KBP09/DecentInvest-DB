@@ -3,7 +3,7 @@ import authRoute from './authRoute'
 import { getProfile, setProfile, profileCheck, getUserRole } from '../controllers/profileController';
 import { transaction, updateTransaction, getAllTransactions, getUserChainBalance } from '../controllers/transactionService';
 import { authenticateToken } from '../controllers/authController';
-import { getAllTokens, getUSDCBalance } from '../controllers/walletService';
+import { getAllTokens, getUSDCBalance, getNativeBalance } from '../controllers/walletService';
 import { createStartup, getStartup, updateNFT, getAllStartup, publishStartup } from '../controllers/startupController';
 import { storeSecurityToken, calculateTokens } from '../controllers/STcontroller';
 import { invest, updateInvestment, investments, addPolymeshWallet, startupInvestments, investmentData } from '../controllers/investmentController';
@@ -36,12 +36,13 @@ app.use("/getAllStartup", getAllStartup);
 app.use("/publish", publishStartup);
 app.use("/storeSecurityToken", storeSecurityToken);
 app.use("/getBalance", getUSDCBalance);
+app.use("/getNativeBalance", getNativeBalance);
 app.use("/invest", authenticateToken, invest);
 app.use("/updateInvestment", authenticateToken, updateInvestment);
 app.use("/getInvestments", authenticateToken, investments);
 app.use("/addPolymeshWallet", authenticateToken, addPolymeshWallet);
 app.use("/startupInvestments", authenticateToken, startupInvestments);
 app.use("/calculateTokens", calculateTokens);
-app.use("/investmentData",authenticateToken,investmentData);
+app.use("/investmentData", authenticateToken, investmentData);
 
 export default app;
