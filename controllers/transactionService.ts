@@ -19,14 +19,14 @@ interface ChainConfig {
 
 
 const getChainConfig = (address: string, action: string): Record<number, ChainConfig> => ({
-    // 80002: {
-    //     url: `https://api-amoy.polygonscan.com/api?module=account&action=${action}&address=${address}${action === 'tokentx' ? '&contractaddress=0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582' : ''}&apikey=${polApiKey}`,
-    //     usdcAddress: '0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582',
-    // }, // Polygon-amoy
-    11155111: {
-        url: `https://api-sepolia.etherscan.io/api?module=account&action=${action}&address=${address}${action === 'tokentx' ? '&contractaddress=0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238' : ''}&apikey=${ethApiKey}`,
-        usdcAddress: '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238'
-    }
+    80002: {
+        url: `https://api-amoy.polygonscan.com/api?module=account&action=${action}&address=${address}${action === 'tokentx' ? '&contractaddress=0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582' : ''}&apikey=${polApiKey}`,
+        usdcAddress: '0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582',
+    }, // Polygon-amoy
+    // 11155111: {
+    //     url: `https://api-sepolia.etherscan.io/api?module=account&action=${action}&address=${address}${action === 'tokentx' ? '&contractaddress=0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238' : ''}&apikey=${ethApiKey}`,
+    //     usdcAddress: '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238'
+    // }
 });
 
 
@@ -42,7 +42,7 @@ export const transaction = async (req: Request, res: Response): Promise<any> => 
     const { amount, fromAddress, toAddress, currency, chainId, privateKey, contractAddress } = req.body;
 
     try {
-        const url = "https://sepolia.infura.io/v3/a5d7e9b31d1247538827bbc14525f0a5"
+        const url = "https://polygon-amoy.infura.io/v3/a5d7e9b31d1247538827bbc14525f0a5"
         const web3 = new Web3(url);
         const fromWallet = await prisma.address.findFirst({
             where: {
@@ -261,7 +261,7 @@ export const updateTransaction = async (req: Request, res: Response): Promise<an
                     fromAddress: txn.from,
                     toAddress: txn.to,
                     amount: parseFloat(txn.value) / Math.pow(10, parseInt(action === "tokentx" ? txn.tokenDecimal : "18")),
-                    currency: action === "tokentx" ? txn.tokenName : "SEPOLIA",
+                    currency: action === "tokentx" ? txn.tokenName : "POL",
                     totalTxnCost: action === "tokentx" ?
                         (parseFloat(txn.gasUsed) * parseFloat(txn.gasPrice)) /
                         Math.pow(10, 18) : 0,

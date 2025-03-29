@@ -3,7 +3,6 @@ import { ethers } from "ethers";
 import * as crypto from "crypto";
 import bcrypt from 'bcrypt';
 import dotenv from 'dotenv'
-import Web3 from "web3";
 import { CurrencyType } from "@prisma/client";
 import { Request, Response } from "express";
 
