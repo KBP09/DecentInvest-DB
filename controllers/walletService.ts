@@ -141,6 +141,7 @@ export const getNativeBalance = async (req: Request, res: Response): Promise<any
             where: {
                 address: address,
                 chainId: chainId,
+                currencyType: "NATIVE"
             }
         });
 
