@@ -10,7 +10,7 @@ dotenv.config();
 const polApiKey = process.env.POLPOSAMOY_API;
 const infuraApiKey = process.env.INFURA_KEY;
 const ethApiKey = process.env.ETHSEPOLIA_API;
-const testNetChains = [11155111];
+const testNetChains = [80002];
 
 interface ChainConfig {
     url: string;
