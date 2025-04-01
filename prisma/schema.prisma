@@ -51,6 +51,7 @@ model Startup {
   contractId           String         @default("")
   amountRaised         Float          @default(0)
   SecurityToken        SecurityToken?
+  status               String         @default("Pending")
 }
 
 model NFT {
@@ -70,16 +71,15 @@ model SecurityToken {
   id              String   @id @default(uuid()) @db.Uuid
   startupId       String   @unique @db.Uuid
   startup         Startup  @relation(fields: [startupId], references: [id])
-  assetId         String?  @unique 
+  assetId         String?  @unique
   symbol          String   @unique
-  tokenName       String?  
-  totalSupply     Float?   
-  ownerWallet     String?  
+  tokenName       String?
+  totalSupply     Float?
+  ownerWallet     String?
   investorWallets String[] @default([])
   createdAt       DateTime @default(now())
   step            String   @default("")
 }
-
 
 model CEOProfile {
   id               String  @id @default(uuid()) @db.Uuid
