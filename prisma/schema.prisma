@@ -177,6 +177,7 @@ model TokenDetails {
   chain_logo   String @default("")
   decimals     Int    @default(6)
   rpc_url      String @default("")
+  usdRate      Float  @default(0)
 }
 
 model Transaction {
