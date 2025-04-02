@@ -173,6 +173,8 @@ model TokenDetails {
   symbol       String
   chainId      String
   tokenAddress String
+  logo_link    String @default("")
+  chain_logo   String @default("")
   decimals     Int    @default(6)
   rpc_url      String @default("")
 }
