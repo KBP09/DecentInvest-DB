@@ -153,7 +153,7 @@ export const investmentData = async (req: Request, res: Response): Promise<any> 
                         polymeshWallet: true,
                     }
                 },
-                amount: true,
+                equityToken: true,
             }
         });
 
