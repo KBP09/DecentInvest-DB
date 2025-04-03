@@ -52,6 +52,7 @@ model Startup {
   amountRaised         Float          @default(0)
   SecurityToken        SecurityToken?
   status               String         @default("Pending")
+  goalMet              Boolean        @default(false)
 }
 
 model NFT {
