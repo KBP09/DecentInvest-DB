@@ -21,7 +21,12 @@ export const invest = async (req: Request, res: Response): Promise<any> => {
             return res.status(404).json({ error: "Investor or Startup not found" });
         }
 
+        if (!investor.polymeshWallet) {
+            return res.status(400).json({ error: "Polymesh wallet not linked. Please connect your wallet before investing." });
+        }
+
         const totalInvestment = investor.totalAmountInvested + amount;
+
         const updated = await prisma.investorProfile.update({
             where: {
                 id: investorId,
@@ -30,10 +35,6 @@ export const invest = async (req: Request, res: Response): Promise<any> => {
                 totalAmountInvested: totalInvestment
             }
         });
-
-        // if (!investor.polymeshWallet) {
-        //     return res.status(400).json({ error: "Polymesh wallet not linked. Please connect your wallet before investing." });
-        // }
 
         const investment = await prisma.investment.create({
             data: {

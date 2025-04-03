@@ -3,7 +3,6 @@ import dotenv from 'dotenv';
 import { Request, Response } from "express";
 import { USDC_ABI } from "../abis/usdcABI";
 import Web3 from "web3";
-import { Polymesh } from "@polymathnetwork/polymesh-sdk";
 
 dotenv.config();
 
