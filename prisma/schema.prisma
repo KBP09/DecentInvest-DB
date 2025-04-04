@@ -81,6 +81,7 @@ model SecurityToken {
   createdAt       DateTime @default(now())
   step            String   @default("")
   venueId         String   @default("")
+  distriId        String   @default("")
 }
 
 model CEOProfile {
