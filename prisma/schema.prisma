@@ -80,6 +80,7 @@ model SecurityToken {
   investorWallets String[] @default([])
   createdAt       DateTime @default(now())
   step            String   @default("")
+  venueId         String   @default("")
 }
 
 model CEOProfile {
