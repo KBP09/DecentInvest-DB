@@ -57,11 +57,11 @@ export const calculateTokens = async (req: Request, res: Response): Promise<any>
 }
 
 export const updateSecurityTokenStep = async (req: Request, res: Response): Promise<any> => {
-    const { startupId, ticker, step, tokenName, assetId, totalSupply, ownerWallet } = req.body;
+    const { startupId, ticker, step, assetId, totalSupply, ownerWallet } = req.body;
 
     try {
         let token = await prisma.securityToken.findUnique({
-            where: { startupId },
+            where: { startupId: startupId },
         });
 
         if (!token) {
@@ -70,7 +70,7 @@ export const updateSecurityTokenStep = async (req: Request, res: Response): Prom
                     data: {
                         startupId,
                         symbol: ticker,
-                        step: "reserved", 
+                        step: "reserved",
                     },
                 });
             } else {
@@ -110,3 +110,30 @@ export const updateSecurityTokenStep = async (req: Request, res: Response): Prom
         return res.status(500).json({ error: error.message || "Something went wrong" });
     }
 };
+
+export const updateDistribution = async (req: Request, res: Response): Promise<any> => {
+    const { startupId, distriId, venuId } = req.body;
+    try {
+        let token = await prisma.securityToken.findUnique({
+            where: { startupId: startupId },
+        });
+
+        if(!token){
+            return res.status(404).json({ error: "Token not found" });
+        }
+
+        token = await prisma.securityToken.update({
+            where:{
+                startupId:startupId,
+            },data:{
+                distriId:distriId,
+                venueId: venuId,
+            }
+        });
+
+        return res.status(200).json({message: "token updated successfully"});
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({error:"Internal Server Error"});
+    }
+}
