@@ -45,6 +45,6 @@ app.use("/startupInvestments", authenticateToken, startupInvestments);
 app.use("/calculateTokens", calculateTokens);
 app.use("/investmentData", authenticateToken, investmentData);
 app.use("/updateSecurityTokenStep", updateSecurityTokenStep);
-app.use("/updateDistribution",updateDistribution);
+app.use("/updateDistribution",authenticateToken,updateDistribution);
 
 export default app;
