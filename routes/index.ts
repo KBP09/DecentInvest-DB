@@ -5,7 +5,7 @@ import { transaction, updateTransaction, getAllTransactions } from '../controlle
 import { authenticateToken } from '../controllers/authController';
 import { getAllTokens, getUSDCBalance, getNativeBalance } from '../controllers/walletService';
 import { createStartup, getStartup, updateNFT, getAllStartup, publishStartup } from '../controllers/startupController';
-import { storeSecurityToken, calculateTokens, updateSecurityTokenStep } from '../controllers/STcontroller';
+import { storeSecurityToken, calculateTokens, updateSecurityTokenStep, updateDistribution } from '../controllers/STcontroller';
 import { invest, updateInvestment, investments, addPolymeshWallet, startupInvestments, investmentData } from '../controllers/investmentController';
 import cors from 'cors';
 
@@ -45,5 +45,6 @@ app.use("/startupInvestments", authenticateToken, startupInvestments);
 app.use("/calculateTokens", calculateTokens);
 app.use("/investmentData", authenticateToken, investmentData);
 app.use("/updateSecurityTokenStep", updateSecurityTokenStep);
+app.use("/updateDistribution",updateDistribution);
 
 export default app;
