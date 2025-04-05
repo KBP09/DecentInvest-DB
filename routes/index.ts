@@ -3,7 +3,7 @@ import authRoute from './authRoute'
 import { getProfile, setProfile, profileCheck, getUserRole } from '../controllers/profileController';
 import { transaction, updateTransaction, getAllTransactions } from '../controllers/transactionService';
 import { authenticateToken } from '../controllers/authController';
-import { getAllTokens, getUSDCBalance, getNativeBalance } from '../controllers/walletService';
+import { getAllTokens, getUSDCBalance, getNativeBalance, storePolymeshWallet } from '../controllers/walletService';
 import { createStartup, getStartup, updateNFT, getAllStartup, publishStartup } from '../controllers/startupController';
 import { storeSecurityToken, calculateTokens, updateSecurityTokenStep, updateDistribution } from '../controllers/STcontroller';
 import { invest, updateInvestment, investments, addPolymeshWallet, startupInvestments, investmentData } from '../controllers/investmentController';
@@ -46,5 +46,6 @@ app.use("/calculateTokens", calculateTokens);
 app.use("/investmentData", authenticateToken, investmentData);
 app.use("/updateSecurityTokenStep", updateSecurityTokenStep);
 app.use("/updateDistribution",authenticateToken,updateDistribution);
+app.use("/connectWallet",authenticateToken,storePolymeshWallet);
 
 export default app;
