@@ -151,3 +151,22 @@ export const getNativeBalance = async (req: Request, res: Response): Promise<any
         return res.status(500).json({ error: "An error occurred during getting the token" });
     }
 }
+
+export const storePolymeshWallet = async (req: Request, res: Response): Promise<any> => {
+    const { investorId, polymeshDid } = req.body;
+
+    try {
+        const investor = prisma.investorProfile.update({
+            where:{
+                id: investorId
+            },data:{
+                polymeshWallet:polymeshDid,
+            }
+        });
+
+        return res.status(200).json({message:"wallet connected successfully"});
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({error:"Internal Server Error"});
+    }
+}
