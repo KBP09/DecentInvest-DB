@@ -204,6 +204,7 @@ export const verifyOtp = async (req: Request, res: Response): Promise<any> => {
         );
 
         if (user.otp === otp) {
+            user.isVerified = true;
             const resp = await createWallet(email, password);
             return res.status(200).json({
                 user: {
@@ -216,6 +217,7 @@ export const verifyOtp = async (req: Request, res: Response): Promise<any> => {
                 isFirstLogin: isFirstLogin,
             });
         }
+        
         return res.status(400).json({ error: "Invalid otp" });
     }
     catch (error: any) {

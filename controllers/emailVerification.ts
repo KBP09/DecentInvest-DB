@@ -1,4 +1,3 @@
-import express, { Request, Response } from 'express';
 import nodemailer from "nodemailer";
 import dotenv from 'dotenv'
 
