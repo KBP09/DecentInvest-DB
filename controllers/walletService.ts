@@ -52,8 +52,6 @@ export const createWallet = async (email: string, password: string): Promise<Cre
 
         const accountId = newWallet.account[0].id;
 
-
-        // Create addresses for all supported tokens with a default balance of 0
         const addressPromises = tokenDetails.map(async (token) => {
             const isNativeToken = token.tokenAddress === "0x0000000000000000000000000000000000000000";
             return await prisma.address.create({
