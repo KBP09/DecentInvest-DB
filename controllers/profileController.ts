@@ -22,7 +22,7 @@ export const getProfile = async (req: Request, res: Response): Promise<any> => {
                     include: {
                         startupsInvestedIn: {
                             include: {
-                                startup: true, // Assuming Investment model has a relation to Startup
+                                startup: true, 
                             }
                         }
                     }

@@ -34,9 +34,22 @@ export const signup = async (req: Request, res: Response): Promise<any> => {
             }
         })
 
-        if (findUser) {
+        if (findUser && findUser.isVerified) {
             return res.status(400).json({ error: "email already exists" });
         }
+
+        if (findUser && !findUser.isVerified) {
+            const otp = await sendOtpEmail(email);
+            const newUser = await prisma.user.update({
+                where: {
+                    email: email
+                }, data: {
+                    otp: otp
+                }
+            })
+            res.json({ message: 'Signup successful, Please verify your otp' });
+        }
+
         const saltRounds = 10;
         const hashedPassword = await bcrypt.hash(password, saltRounds);
         const user = await prisma.user.create({
@@ -98,7 +111,8 @@ export const login = async (req: Request, res: Response): Promise<any> => {
     try {
         const user = await prisma.user.findUnique({
             where: { email: email },
-        })
+        });
+
         if (!user) {
             return res.status(400).json({ error: 'Invalid email' });
         }
@@ -107,6 +121,10 @@ export const login = async (req: Request, res: Response): Promise<any> => {
 
         if (!isPasswordValid) {
             return res.status(401).json({ error: 'Invalid password' });
+        }
+
+        if (!user.isVerified) {
+            return res.status(401).json({ error: 'User not verified' });
         }
 
         const accessToken = jwt.sign(
@@ -121,17 +139,17 @@ export const login = async (req: Request, res: Response): Promise<any> => {
             },
             include: {
                 account: {
-                    select:{
-                        walletId:true,
-                        address:true,
-                        privateKey:true,
-                        addresses:{
-                            select:{
-                                tokenAddress:true,
-                                address:true,
-                                currency:true,
-                                balance:true,
-                                chainId:true,
+                    select: {
+                        walletId: true,
+                        address: true,
+                        privateKey: true,
+                        addresses: {
+                            select: {
+                                tokenAddress: true,
+                                address: true,
+                                currency: true,
+                                balance: true,
+                                chainId: true,
                             }
                         }
                     }
@@ -158,7 +176,7 @@ export const login = async (req: Request, res: Response): Promise<any> => {
 
 export const verifyOtp = async (req: Request, res: Response): Promise<any> => {
     const { email, password, otp } = req.body;
-    
+
     try {
 
         const user = await prisma.user.findUnique({
