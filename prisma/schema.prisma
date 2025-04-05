@@ -19,6 +19,7 @@ model User {
   otp               Int              @default(0)
   isFirstLogin      Boolean          @default(true)
   isProfileComplete Boolean          @default(false)
+  isVerified        Boolean          @default(false)
 }
 
 model Startup {
