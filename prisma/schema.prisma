@@ -104,6 +104,7 @@ model CEOProfile {
 
 model InvestorProfile {
   id                  String       @id @default(uuid()) @db.Uuid
+  userName            String       @unique @default("")
   profilePicture      String?
   investorName        String
   education           String
