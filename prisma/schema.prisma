@@ -87,6 +87,7 @@ model SecurityToken {
 
 model CEOProfile {
   id               String  @id @default(uuid()) @db.Uuid
+  userName         String  @unique @default("")
   profilePicture   String?
   ceoName          String
   education        String
