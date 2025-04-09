@@ -22,7 +22,7 @@ export const getProfile = async (req: Request, res: Response): Promise<any> => {
                     include: {
                         startupsInvestedIn: {
                             include: {
-                                startup: true, 
+                                startup: true,
                             }
                         }
                     }
@@ -219,6 +219,48 @@ export const getUserRole = async (req: Request, res: Response): Promise<any> => 
         }
         return res.status(200).json({ role: user?.role, profilepic: profilePic });
     } catch (error) {
+        return res.status(500).json({ error: "something went wrong" });
+    }
+}
+
+export const getUserProfile = async (req: Request, res: Response): Promise<any> => {
+    const { userName } = req.body;
+    try {
+        const investorProfile = await prisma.investorProfile.findUnique({
+            where: { userName },
+            include: {
+                user: true,
+            },
+        });
+
+        if (investorProfile) {
+            return res.status(200).json({
+                username: investorProfile.userName,
+                role: "INVESTOR",
+                profile: investorProfile,
+            });
+        }
+
+        const ceoProfile = await prisma.cEOProfile.findUnique({
+            where: {
+                userName
+            },
+            include: {
+                user: true,
+            },
+        });
+
+        if (ceoProfile) {
+            return res.status(200).json({
+                username: ceoProfile.userName,
+                role: "CEO",
+                profile: ceoProfile,
+            });
+        }
+
+        return res.status(404).json({ message: "Profile not found" });
+    } catch (error) {
+        console.log(error);
         return res.status(500).json({ error: "something went wrong" });
     }
 }
