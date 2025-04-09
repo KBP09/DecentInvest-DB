@@ -1,6 +1,6 @@
 import express from 'express'
 import authRoute from './authRoute'
-import { getProfile, setProfile, profileCheck, getUserRole, getUserProfile, getCeoProfile } from '../controllers/profileController';
+import { getProfile, setProfile, profileCheck, getUserRole, getInvestorProfile, getUserProfile, getCeoProfile } from '../controllers/profileController';
 import { transaction, updateTransaction, getAllTransactions } from '../controllers/transactionService';
 import { authenticateToken } from '../controllers/authController';
 import { getAllTokens, getUSDCBalance, getNativeBalance, storePolymeshWallet } from '../controllers/walletService';
@@ -24,8 +24,9 @@ app.use("/auth", authRoute);
 app.use("/setProfile", authenticateToken, setProfile);
 app.use("/profileCheck", profileCheck);
 app.use("/getProfile", authenticateToken, getProfile);
-app.use("/getUserProfile",authenticateToken,getUserProfile);
-app.use("/getCeoProfile",authenticateToken,getCeoProfile);
+app.use("/getUserProfile", authenticateToken, getUserProfile);
+app.use("/getCeoProfile", authenticateToken, getCeoProfile);
+app.use("/getInvestorProfile", authenticateToken, getInvestorProfile);
 app.use("/createStartup", createStartup);
 app.use("/transaction", authenticateToken, transaction);
 app.use("/updateTransaction", authenticateToken, updateTransaction);
@@ -47,7 +48,7 @@ app.use("/startupInvestments", authenticateToken, startupInvestments);
 app.use("/calculateTokens", calculateTokens);
 app.use("/investmentData", authenticateToken, investmentData);
 app.use("/updateSecurityTokenStep", updateSecurityTokenStep);
-app.use("/updateDistribution",authenticateToken,updateDistribution);
-app.use("/connectWallet",authenticateToken,storePolymeshWallet);
+app.use("/updateDistribution", authenticateToken, updateDistribution);
+app.use("/connectWallet", authenticateToken, storePolymeshWallet);
 
 export default app;
