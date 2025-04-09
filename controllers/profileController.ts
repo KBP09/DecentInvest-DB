@@ -227,42 +227,94 @@ export const getUserRole = async (req: Request, res: Response): Promise<any> => 
 
 export const getUserProfile = async (req: Request, res: Response): Promise<any> => {
     const { userName } = req.body;
+
     try {
         const investorProfile = await prisma.investorProfile.findUnique({
             where: { userName },
             include: {
                 user: true,
+                startupsInvestedIn: {
+                    include: {
+                        startup: true,
+                    },
+                },
             },
         });
 
         if (investorProfile) {
+            const startupDetails = investorProfile.startupsInvestedIn.map(
+                (investment) => investment.startup
+            );
+
             return res.status(200).json({
                 username: investorProfile.userName,
                 role: "INVESTOR",
                 profile: investorProfile,
+                startupDetails,
             });
         }
 
         const ceoProfile = await prisma.cEOProfile.findUnique({
             where: {
-                userName
+                userName,
             },
             include: {
-                user: true,
+                user: {
+                    include: {
+                        startups: true,
+                    },
+                },
             },
         });
 
         if (ceoProfile) {
+            const startupDetails = ceoProfile.user.startups || [];
+
             return res.status(200).json({
                 username: ceoProfile.userName,
                 role: "CEO",
                 profile: ceoProfile,
+                startupDetails,
             });
         }
 
         return res.status(404).json({ message: "Profile not found" });
     } catch (error) {
         console.log(error);
-        return res.status(500).json({ error: "something went wrong" });
+        return res.status(500).json({ error: "Something went wrong" });
+    }
+};
+
+export const getCeoProfile = async (req: Request, res: Response): Promise<any> => {
+    const { userName } = req.body;
+    try {
+        const ceoProfile = await prisma.cEOProfile.findUnique({
+            where: {
+                userName,
+            },
+            include: {
+                user: {
+                    include: {
+                        startups: true,
+                    },
+                },
+            },
+        });
+
+        if (ceoProfile) {
+            const startupDetails = ceoProfile.user.startups || [];
+
+            return res.status(200).json({
+                username: ceoProfile.userName,
+                role: "CEO",
+                profile: ceoProfile,
+                startupDetails,
+            });
+        }
+
+        return res.status(404).json({ message: "Profile not found" });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ error: "Something went wrong" });
     }
 }
