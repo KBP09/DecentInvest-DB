@@ -318,3 +318,38 @@ export const getCeoProfile = async (req: Request, res: Response): Promise<any> =
         return res.status(500).json({ error: "Something went wrong" });
     }
 }
+
+export const getInvestorProfile = async (req: Request, res: Response): Promise<any> => {
+    const { userName } = req.body;
+    try {
+        const investorProfile = await prisma.investorProfile.findUnique({
+            where: { userName },
+            include: {
+                user: true,
+                startupsInvestedIn: {
+                    include: {
+                        startup: true,
+                    },
+                },
+            },
+        });
+
+        if (investorProfile) {
+            const startupDetails = investorProfile.startupsInvestedIn.map(
+                (investment) => investment.startup
+            );
+
+            return res.status(200).json({
+                username: investorProfile.userName,
+                role: "INVESTOR",
+                profile: investorProfile,
+                startupDetails,
+            });
+        }
+
+        return res.status(404).json({ message: "Profile not found" });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ error: "Something went wrong" });
+    }
+}
