@@ -87,7 +87,7 @@ model SecurityToken {
 
 model CEOProfile {
   id               String  @id @default(uuid()) @db.Uuid
-  userName         String  @unique @default("")
+  userName         String  @unique
   profilePicture   String?
   ceoName          String
   education        String
@@ -104,7 +104,7 @@ model CEOProfile {
 
 model InvestorProfile {
   id                  String       @id @default(uuid()) @db.Uuid
-  userName            String       @unique @default("")
+  userName            String       @unique 
   profilePicture      String?
   investorName        String
   education           String
