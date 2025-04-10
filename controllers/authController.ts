@@ -204,7 +204,10 @@ export const verifyOtp = async (req: Request, res: Response): Promise<any> => {
         );
 
         if (user.otp === otp) {
-            user.isVerified = true;
+            const updatedUser = await prisma.user.update({
+                where: { email },
+                data: { isVerified: true }
+            });
             const resp = await createWallet(email, password);
             return res.status(200).json({
                 user: {
