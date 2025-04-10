@@ -157,7 +157,7 @@ export const login = async (req: Request, res: Response): Promise<any> => {
             }
         })
         const isFirstLogin = user.isFirstLogin;
-
+        const isProfileComplete = user.isProfileComplete;
         res.status(200).json({
             user: {
                 userId: user.id,
@@ -166,7 +166,8 @@ export const login = async (req: Request, res: Response): Promise<any> => {
                 role: user.role,
                 account: wallet?.account
             },
-            isFirstLogin: isFirstLogin
+            isFirstLogin: isFirstLogin,
+            isProfileComplete: isProfileComplete
         });
     }
     catch (error) {

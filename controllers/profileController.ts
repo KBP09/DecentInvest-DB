@@ -87,7 +87,7 @@ export const setProfile = async (req: Request, res: Response): Promise<any> => {
             return res.status(400).json({ error: "No file uploaded" });
         }
         try {
-            const { userId, username, name, about, education, birthday, twitter, linkedin, github } = req.body;
+            const { userId, userName, name, about, education, birthday, twitter, linkedin, github } = req.body;
 
             const profilePicCID = await uploadToIPFS(req.file.buffer, req.file.originalname);
 
@@ -107,7 +107,7 @@ export const setProfile = async (req: Request, res: Response): Promise<any> => {
                                 connect: { id: userId },
                             },
                             ceoName: name,
-                            userName: username,
+                            userName: userName,
                             about: about,
                             education: education,
                             profilePicture: profilePicture,
@@ -135,7 +135,7 @@ export const setProfile = async (req: Request, res: Response): Promise<any> => {
                                 connect: { id: userId },
                             },
                             investorName: name,
-                            userName: username,
+                            userName: userName,
                             education: education,
                             profilePicture: profilePicture,
                             about: about,
