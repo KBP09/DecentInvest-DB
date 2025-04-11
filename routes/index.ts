@@ -1,6 +1,6 @@
 import express from 'express'
 import authRoute from './authRoute'
-import { getProfile, setProfile, profileCheck, getUserRole, getInvestorProfile, getUserProfile, getCeoProfile } from '../controllers/profileController';
+import { getProfile, setProfile, profileCheck, getUserRole, getInvestorProfile, getUserProfile, getCeoProfile, getAllCEO } from '../controllers/profileController';
 import { transaction, updateTransaction, getAllTransactions } from '../controllers/transactionService';
 import { authenticateToken } from '../controllers/authController';
 import { getAllTokens, getUSDCBalance, getNativeBalance, storePolymeshWallet } from '../controllers/walletService';
@@ -50,5 +50,6 @@ app.use("/investmentData", authenticateToken, investmentData);
 app.use("/updateSecurityTokenStep", updateSecurityTokenStep);
 app.use("/updateDistribution", authenticateToken, updateDistribution);
 app.use("/connectWallet", authenticateToken, storePolymeshWallet);
+app.use("/getAllCeo", authenticateToken, getAllCEO);
 
 export default app;
