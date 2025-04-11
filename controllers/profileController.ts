@@ -353,3 +353,21 @@ export const getInvestorProfile = async (req: Request, res: Response): Promise<a
         return res.status(500).json({ error: "Something went wrong" });
     }
 }
+
+export const getAllCEO = async (req: Request, res: Response): Promise<any> => {
+    try {
+        const ceos = await prisma.cEOProfile.findMany({
+            select: {
+                ceoName: true,
+                userName: true,
+                profilePicture: true,
+                startupsCreated: true,
+            }
+        });
+
+        return res.status(200).json(ceos);
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ error: "Something went wrong" });
+    }
+}
