@@ -158,7 +158,30 @@ export const getStartup = async (req: Request, res: Response): Promise<any> => {
             return res.status(404).json({ error: "Startup not found" });
         }
 
-        res.status(200).json(startup);
+        const user = await prisma.user.findUnique({
+            where: {
+                id: startup.ownerId,
+            }
+        });
+
+        const profile = await prisma.cEOProfile.findUnique({
+            where: {
+                userId: user?.id,
+            }
+        });
+
+        if (!profile) {
+            return res.status(404).json({ error: "Startup owner not found" });
+        }
+
+        const userName = profile.userName;
+
+        res.status(200).json({
+            startup: {
+                ...startup,
+                userName,
+            }
+        });
     } catch (error) {
         console.log(error);
         res.status(500).json({ error: "Internal Server Error" });
