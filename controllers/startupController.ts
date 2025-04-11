@@ -176,12 +176,12 @@ export const getStartup = async (req: Request, res: Response): Promise<any> => {
 
         const userName = profile.userName;
 
-        res.status(200).json({
-            startup: {
-                ...startup,
-                userName,
-            }
-        });
+        const fullStartup = {
+            ...startup,
+            userName,
+        };
+
+        res.status(200).json(fullStartup);
     } catch (error) {
         console.log(error);
         res.status(500).json({ error: "Internal Server Error" });
