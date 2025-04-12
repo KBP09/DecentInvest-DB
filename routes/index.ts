@@ -4,7 +4,7 @@ import { getProfile, setProfile, profileCheck, getUserRole, getInvestorProfile, 
 import { transaction, updateTransaction, getAllTransactions } from '../controllers/transactionService';
 import { authenticateToken } from '../controllers/authController';
 import { getAllTokens, getUSDCBalance, getNativeBalance, storePolymeshWallet } from '../controllers/walletService';
-import { createStartup, getStartup, updateNFT, getAllStartup, publishStartup } from '../controllers/startupController';
+import { createStartup, getStartup, updateNFT, getAllStartup, publishStartup, getContractId } from '../controllers/startupController';
 import { storeSecurityToken, calculateTokens, updateSecurityTokenStep, updateDistribution } from '../controllers/STcontroller';
 import { invest, updateInvestment, investments, addPolymeshWallet, startupInvestments, investmentData } from '../controllers/investmentController';
 import cors from 'cors';
@@ -51,5 +51,6 @@ app.use("/updateSecurityTokenStep", updateSecurityTokenStep);
 app.use("/updateDistribution", authenticateToken, updateDistribution);
 app.use("/connectWallet", authenticateToken, storePolymeshWallet);
 app.use("/getAllCeo", authenticateToken, getAllCEO);
+app.use("/getContractId", getContractId);
 
 export default app;

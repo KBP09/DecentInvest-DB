@@ -38,7 +38,7 @@ const providerListInfuria = {
 
 
 export const transaction = async (req: Request, res: Response): Promise<any> => {
-    const { amount, fromAddress, toAddress, currency, chainId, privateKey, contractAddress } = req.body;
+    const { amount, fromAddress, toAddress, currency, chainId, type, privateKey, contractAddress, contractId } = req.body;
 
     try {
         const url = "https://polygon-amoy.infura.io/v3/a5d7e9b31d1247538827bbc14525f0a5"
@@ -65,7 +65,9 @@ export const transaction = async (req: Request, res: Response): Promise<any> => 
             });
         }
 
-        const transactionCost = await getTransactionCost(url, fromAddress, toAddress, amount, contractAddress);
+        const gasEstimateAddress = type === "investment" ? "0xb6d6d6d0c620075311562c89e22964f87079d373" : toAddress;
+        
+        const transactionCost = await getTransactionCost(url, fromAddress, gasEstimateAddress, amount, contractAddress);
 
         if (nativeToken?.symbol !== currency) {
             const fromNative = await prisma.address.findFirst({
@@ -97,6 +99,115 @@ export const transaction = async (req: Request, res: Response): Promise<any> => 
         }
 
         const amountInWei = web3.utils.toWei(amount.toString(), 'mwei');
+
+        if (type === "investment") {
+            const usdcContractAddress = "0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582";
+            const investmentContractAddress = "0xb6d6d6d0c620075311562c89e22964f87079d373";
+
+            const usdcAbi = [{
+                name: "approve",
+                type: "function",
+                inputs: [
+                    { name: "_spender", type: "address" },
+                    { name: "_value", type: "uint256" }
+                ]
+            }];
+
+            const investAbi = [{
+                name: "invest",
+                type: "function",
+                inputs: [
+                    { name: "_startupId", type: "uint256" },
+                    { name: "_amount", type: "uint256" }
+                ]
+            }];
+
+            
+            const approveData = web3.eth.abi.encodeFunctionCall(usdcAbi[0], [investmentContractAddress, amountInWei]);
+
+            const approveTx: any = {
+                from: fromAddress,
+                to: usdcContractAddress,
+                data: approveData,
+                gasPrice: await web3.eth.getGasPrice(),
+                nonce: await web3.eth.getTransactionCount(fromAddress, "pending"),
+                chainId,
+            };
+
+            approveTx.gas = await web3.eth.estimateGas({ ...approveTx, value: '0x0' });
+
+            const signedApprove = await web3.eth.accounts.signTransaction(approveTx, privateKey);
+            const approveReceipt = await web3.eth.sendSignedTransaction(signedApprove.rawTransaction!);
+
+           
+            const investData = web3.eth.abi.encodeFunctionCall(investAbi[0], [
+                contractId,
+                amountInWei
+            ]);
+
+            const investTx: any = {
+                from: fromAddress,
+                to: investmentContractAddress, 
+                data: investData,
+                gasPrice: await web3.eth.getGasPrice(),
+                nonce: await web3.eth.getTransactionCount(fromAddress, "pending"),
+                chainId
+            };
+
+            investTx.gas = await web3.eth.estimateGas({ ...investTx, value: '0x0' });
+
+            const signedInvest = await web3.eth.accounts.signTransaction(investTx, privateKey);
+            const investReceipt = await web3.eth.sendSignedTransaction(signedInvest.rawTransaction!);
+
+            await prisma.transaction.create({
+                data: {
+                    fromAddress,
+                    toAddress: investmentContractAddress, 
+                    amount,
+                    currency,
+                    transactionHash: investReceipt.transactionHash.toString(),
+                    totalTxnCost: parseFloat(transactionCost),
+                    confirmed: true,
+                    chainId,
+                    nonce: Number(investTx.nonce),
+                    type: "investment"
+                }
+            });
+
+            if (nativeToken?.symbol === currency) {
+                await prisma.address.update({
+                    where: { id: fromWallet.id },
+                    data: { balance: fromWallet.balance - amount - transactionCost }
+                });
+            } else {
+                await prisma.address.update({
+                    where: { id: fromWallet.id },
+                    data: { balance: fromWallet.balance - amount }
+                });
+
+                const fromNative = await prisma.address.findFirst({
+                    where: {
+                        address: fromAddress,
+                        chainId: chainId,
+                        currencyType: "NATIVE",
+                    }
+                });
+
+                if (fromNative) {
+                    await prisma.address.update({
+                        where: { id: fromNative.id },
+                        data: { balance: fromNative.balance - transactionCost }
+                    });
+                }
+            }
+
+            return res.status(200).json({
+                message: "Investment successful",
+                transactionHash: investReceipt.transactionHash,
+                type: "investment"
+            });
+        }
+
 
         const txData = web3.eth.abi.encodeFunctionCall(
             {
