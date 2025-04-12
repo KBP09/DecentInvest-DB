@@ -245,11 +245,8 @@ export const userNameCheck = async (req: Request, res: Response): Promise<any> =
             },
         });
 
-        if (existingUser) {
-            return res.status(409).json({ message: "Username is already taken" });
-        }
 
-        return res.status(200).json({ message: "Username is available" });
+        return res.status(200).json({ exists: !!existingUser });
     } catch (error) {
         console.error("Error checking username:", error);
         return res.status(500).json({ message: "Internal server error" });
