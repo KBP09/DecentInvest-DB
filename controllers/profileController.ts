@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import multer from "multer";
 import { uploadToIPFS } from "./startupController";
 import { Request, Response } from 'express';
+import { error } from "console";
 dotenv.config();
 
 const storage = multer.memoryStorage();
@@ -87,7 +88,7 @@ export const setProfile = async (req: Request, res: Response): Promise<any> => {
             return res.status(400).json({ error: "No file uploaded" });
         }
         try {
-            const { userId, userName, name, about, education, birthday, twitter, linkedin, github } = req.body;
+            const { userId, name, about, education, birthday, twitter, linkedin, github } = req.body;
 
             const profilePicCID = await uploadToIPFS(req.file.buffer, req.file.originalname);
 
@@ -98,6 +99,12 @@ export const setProfile = async (req: Request, res: Response): Promise<any> => {
                     id: userId,
                 }
             });
+
+            const userName = user?.userName;
+
+            if(!userName){
+                return res.status(404).json({error: "username not found"});
+            }
 
             if (user?.isProfileComplete === false) {
                 if (user.role === 'STARTUP_OWNER') {

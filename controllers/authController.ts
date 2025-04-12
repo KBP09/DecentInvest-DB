@@ -1,6 +1,6 @@
 import prisma from "../DB/db.config";
 import bcrypt from 'bcrypt';
-import dotenv from 'dotenv'
+import dotenv from 'dotenv';
 import * as jwt from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
 import { sendOtpEmail } from "./emailVerification";
@@ -25,14 +25,14 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
 }
 
 export const signup = async (req: Request, res: Response): Promise<any> => {
-    const { email, password } = req.body;
+    const { userName, email, password } = req.body;
 
     try {
         const findUser = await prisma.user.findUnique({
             where: {
                 email: email
             }
-        })
+        });
 
         if (findUser && findUser.isVerified) {
             return res.status(400).json({ error: "email already exists" });
@@ -56,7 +56,8 @@ export const signup = async (req: Request, res: Response): Promise<any> => {
             data: {
                 email: email,
                 password: hashedPassword,
-                role: null
+                role: null,
+                userName: userName,
             }
         })
         const otp = await sendOtpEmail(email);
@@ -221,7 +222,7 @@ export const verifyOtp = async (req: Request, res: Response): Promise<any> => {
                 isFirstLogin: isFirstLogin,
             });
         }
-        
+
         return res.status(400).json({ error: "Invalid otp" });
     }
     catch (error: any) {
@@ -229,3 +230,28 @@ export const verifyOtp = async (req: Request, res: Response): Promise<any> => {
         return res.status(500).json({ error: error.message || "Internal server error" });
     }
 }
+
+export const userNameCheck = async (req: Request, res: Response): Promise<any> => {
+    const { userName } = req.body;
+
+    if (!userName || typeof userName !== "string") {
+        return res.status(400).json({ message: "Username is required and must be a string" });
+    }
+
+    try {
+        const existingUser = await prisma.user.findFirst({
+            where: {
+                userName: userName.trim(),
+            },
+        });
+
+        if (existingUser) {
+            return res.status(409).json({ message: "Username is already taken" });
+        }
+
+        return res.status(200).json({ message: "Username is available" });
+    } catch (error) {
+        console.error("Error checking username:", error);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+};
