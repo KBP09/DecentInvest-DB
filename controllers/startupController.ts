@@ -230,3 +230,20 @@ export const publishStartup = async (req: Request, res: Response): Promise<any> 
         res.status(500).json({ error: "Internal Server Error" });
     }
 }
+
+export const getContractId = async (req: Request, res: Response): Promise<any> => {
+    const { startupId } = req.body;
+
+    try {
+        const startup = await prisma.startup.findUnique({
+            where: {
+                id: startupId,
+            }
+        });
+
+        return res.status(200).json(startup?.contractId);
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ error: "Internal Server Error" });
+    }
+}
