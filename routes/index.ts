@@ -2,7 +2,7 @@ import express from 'express'
 import authRoute from './authRoute'
 import { getProfile, setProfile, profileCheck, getUserRole, getInvestorProfile, getUserProfile, getCeoProfile, getAllCEO } from '../controllers/profileController';
 import { transaction, updateTransaction, getAllTransactions } from '../controllers/transactionService';
-import { authenticateToken } from '../controllers/authController';
+import { authenticateToken, userNameCheck } from '../controllers/authController';
 import { getAllTokens, getUSDCBalance, getNativeBalance, storePolymeshWallet } from '../controllers/walletService';
 import { createStartup, getStartup, updateNFT, getAllStartup, publishStartup, getContractId } from '../controllers/startupController';
 import { storeSecurityToken, calculateTokens, updateSecurityTokenStep, updateDistribution } from '../controllers/STcontroller';
@@ -52,5 +52,6 @@ app.use("/updateDistribution", authenticateToken, updateDistribution);
 app.use("/connectWallet", authenticateToken, storePolymeshWallet);
 app.use("/getAllCeo", authenticateToken, getAllCEO);
 app.use("/getContractId", getContractId);
+app.use("/userNameCheck", userNameCheck);
 
 export default app;
