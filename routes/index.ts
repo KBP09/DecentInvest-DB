@@ -27,7 +27,7 @@ app.use("/getProfile", authenticateToken, getProfile);
 app.use("/getUserProfile", authenticateToken, getUserProfile);
 app.use("/getCeoProfile", authenticateToken, getCeoProfile);
 app.use("/getInvestorProfile", authenticateToken, getInvestorProfile);
-app.use("/createStartup", createStartup);
+app.use("/createStartup",authenticateToken, createStartup);
 app.use("/transaction", authenticateToken, transaction);
 app.use("/updateTransaction", authenticateToken, updateTransaction);
 app.use("/getAllTokens", authenticateToken, getAllTokens);
