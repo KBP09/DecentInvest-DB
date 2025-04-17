@@ -36,7 +36,7 @@ app.use("/recents", getAllTransactions);
 app.use("/startup/:startupId", getStartup);
 app.use("/updateNFT", authenticateToken, updateNFT);
 app.use("/getAllStartup", getAllStartup);
-app.use("/publish", publishStartup);
+app.use("/publish",authenticateToken, publishStartup);
 app.use("/storeSecurityToken", storeSecurityToken);
 app.use("/getBalance", getUSDCBalance);
 app.use("/getNativeBalance", getNativeBalance);
