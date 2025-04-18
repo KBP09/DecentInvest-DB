@@ -102,8 +102,8 @@ export const setProfile = async (req: Request, res: Response): Promise<any> => {
 
             const userName = user?.userName;
 
-            if(!userName){
-                return res.status(404).json({error: "username not found"});
+            if (!userName) {
+                return res.status(404).json({ error: "username not found" });
             }
 
             if (user?.isProfileComplete === false) {
@@ -373,6 +373,25 @@ export const getAllCEO = async (req: Request, res: Response): Promise<any> => {
         });
 
         return res.status(200).json(ceos);
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ error: "Something went wrong" });
+    }
+}
+
+export const getAllInvestors = async (req: Request, res: Response): Promise<any> => {
+    try {
+        const investors = await prisma.investorProfile.findMany({
+            select: {
+                investorName: true,
+                userName: true,
+                profilePicture: true,
+                startupsInvestedIn: true,
+                totalAmountInvested: true,
+            }
+        });
+
+        return res.status(200).json(investors);
     } catch (error) {
         console.log(error);
         return res.status(500).json({ error: "Something went wrong" });
