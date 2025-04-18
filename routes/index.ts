@@ -1,6 +1,6 @@
 import express from 'express'
 import authRoute from './authRoute'
-import { getProfile, setProfile, profileCheck, getUserRole, getInvestorProfile, getUserProfile, getCeoProfile, getAllCEO } from '../controllers/profileController';
+import { getProfile, setProfile, profileCheck, getUserRole, getInvestorProfile, getUserProfile, getCeoProfile, getAllCEO, getAllInvestors } from '../controllers/profileController';
 import { transaction, updateTransaction, getAllTransactions } from '../controllers/transactionService';
 import { authenticateToken, userNameCheck } from '../controllers/authController';
 import { getAllTokens, getUSDCBalance, getNativeBalance, storePolymeshWallet } from '../controllers/walletService';
@@ -27,7 +27,7 @@ app.use("/getProfile", authenticateToken, getProfile);
 app.use("/getUserProfile", authenticateToken, getUserProfile);
 app.use("/getCeoProfile", authenticateToken, getCeoProfile);
 app.use("/getInvestorProfile", authenticateToken, getInvestorProfile);
-app.use("/createStartup",authenticateToken, createStartup);
+app.use("/createStartup", authenticateToken, createStartup);
 app.use("/transaction", authenticateToken, transaction);
 app.use("/updateTransaction", authenticateToken, updateTransaction);
 app.use("/getAllTokens", authenticateToken, getAllTokens);
@@ -36,7 +36,7 @@ app.use("/recents", getAllTransactions);
 app.use("/startup/:startupId", getStartup);
 app.use("/updateNFT", authenticateToken, updateNFT);
 app.use("/getAllStartup", getAllStartup);
-app.use("/publish",authenticateToken, publishStartup);
+app.use("/publish", authenticateToken, publishStartup);
 app.use("/storeSecurityToken", storeSecurityToken);
 app.use("/getBalance", getUSDCBalance);
 app.use("/getNativeBalance", getNativeBalance);
@@ -51,6 +51,7 @@ app.use("/updateSecurityTokenStep", updateSecurityTokenStep);
 app.use("/updateDistribution", authenticateToken, updateDistribution);
 app.use("/connectWallet", authenticateToken, storePolymeshWallet);
 app.use("/getAllCeo", authenticateToken, getAllCEO);
+app.use("/getAllInvestors", authenticateToken, getAllInvestors);
 app.use("/getContractId", getContractId);
 app.use("/userNameCheck", userNameCheck);
 
