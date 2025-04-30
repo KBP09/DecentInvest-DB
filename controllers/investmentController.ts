@@ -36,6 +36,16 @@ export const invest = async (req: Request, res: Response): Promise<any> => {
             }
         });
 
+        const totalAmountRaised = startup.amountRaised + amount;
+
+        const updatedInvestAmount = await prisma.startup.update({
+            where: {
+                id: startupId
+            }, data: {
+                amountRaised: totalAmountRaised,
+            }
+        });
+
         const investment = await prisma.investment.create({
             data: {
                 investorId: investorId,
@@ -193,7 +203,7 @@ export const claimTokens = async (req: Request, res: Response): Promise<any> => 
             },
             data: { claimed: true },
         });
-        
+
         return res.status(200).json({ distributions: distributions });
     } catch (error) {
         console.log(error);
