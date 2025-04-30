@@ -149,7 +149,7 @@ export const transaction = async (req: Request, res: Response): Promise<any> => 
             const signedApprove = await web3.eth.accounts.signTransaction(approveTx, privateKey);
             const approveReceipt = await web3.eth.sendSignedTransaction(signedApprove.rawTransaction!);
 
-            const investmentContract = new web3.eth.Contract(investmentAbiFull, investmentContractAddress);
+            const investmentContract = new web3.eth.Contract(investmentABIFull, investmentContractAddress);
             const startup = await investmentContract.methods.startups(contractId).call();
             console.log("Startup:", startup);
 
