@@ -3,7 +3,6 @@ import dotenv from 'dotenv';
 import multer from "multer";
 import { uploadToIPFS } from "./startupController";
 import { Request, Response } from 'express';
-import { error } from "console";
 dotenv.config();
 
 const storage = multer.memoryStorage();
