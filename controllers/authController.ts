@@ -249,6 +249,7 @@ export const userNameCheck = async (req: Request, res: Response): Promise<any> =
         return res.status(200).json({ exists: !!existingUser });
     } catch (error) {
         console.error("Error checking username:", error);
+        
         return res.status(500).json({ message: "Internal server error" });
     }
 };
