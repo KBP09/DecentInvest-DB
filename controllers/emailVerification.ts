@@ -27,7 +27,7 @@ export const sendOtpEmail = async (email: string): Promise<number> => {
         from: process.env.EMAIL_USER,
         to: email,
         subject: "Your OTP Code",
-        text: `sYour OTP is: ${otp}`,
+        text: `Your OTP is: ${otp}`,
     };
 
     try{
